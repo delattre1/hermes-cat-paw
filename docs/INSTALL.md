@@ -1,16 +1,106 @@
+<p align="center">
+  <img src="../install-guide.png" alt="Hermes Cat Paw installation guide" width="760" />
+</p>
+
 # Install Hermes Cat Paw
 
-This guide is for a Windows PC, Linux desktop, or Omarchy machine.
+Hermes Cat Paw connects Hermes to a Windows, Linux, or Omarchy computer through
+Cat Paw Latch. The computer stays under the owner's control: Latch shows each
+meaningful action and waits for approval.
 
-## 1. Install the device side
+## Let an agent do the installation
+
+Copy the prompt below into your harness (Hermes, Claude Code, Codex, or another
+MCP-capable agent). It is intentionally explicit so the agent can inspect the
+machine, preserve an existing Hermes installation, and stop safely when a
+credential or owner decision is required.
+
+```text
+Install and configure Hermes Cat Paw on this computer.
+
+Goal:
+- Connect my Hermes agent to my Windows, Linux, or Omarchy computer through
+  Cat Paw Latch.
+- Use the public agent identity AGENT_ID=hermes-cat-paw.
+- Keep my existing Hermes installation intact if one already exists.
+- Make the installation report usage to the Agent Index without exposing any
+  secret or sending prompts, files, paths, or task content.
+
+Read this guide first:
+https://github.com/kumanaya/hermes-cat-paw/blob/main/docs/INSTALL.md
+
+Safety rules:
+1. Inspect the OS, architecture, installed Node.js, Git, Python, just, Docker,
+   Hermes, and the Plow Chat plugin before changing anything.
+2. If Hermes already exists, preserve its HERMES_HOME, persona, sessions,
+   skills, provider settings, credentials, and launcher. Do not delete files,
+   reset volumes, replace config.yaml, or create a second persona.
+3. Never print, request, paste, commit, or send passwords, tokens, cookies,
+   one-time codes, plow-credentials, or PLOW_AGENT_TOKEN in chat or logs.
+4. Use the official Plow tooling and plugin for the installed Hermes version.
+   Do not clone or copy private credentials into this repository.
+5. On Windows, use Git Bash or WSL2 for commands that need sh/bash. Do not
+   assume PowerShell can run Unix shell commands.
+6. Ask me before a persistent launcher/service change, a new Plow line, or any
+   action that could replace existing Hermes state. Explain the exact change.
+7. Keep Latch running and visible. For the first device check, use only a
+   read-only capability check. Never bypass an approval, denial, timeout, MFA,
+   disconnect, or host block.
+
+Clean installation:
+1. Install the prerequisites for this OS: Node.js 22+, Git, Python 3, just,
+   Docker with Compose, and the platform-native build dependencies described
+   in this guide.
+2. Clone https://github.com/kumanaya/cat-paw-latch.git, run `just install`,
+   and run `just app`. Sign in to Latch and leave it running.
+3. Clone https://github.com/kumanaya/hermes-cat-paw.git.
+4. Clone https://github.com/plow-pbc/plow-agents.git beside it.
+5. Use `plow-agents login --new-line` (or the existing free line), list lines,
+   and mint a credential for the selected line. Never display the credential.
+6. Start Hermes Cat Paw with `docker compose up --build -d`.
+7. Keep the named volume `hermes-cat-paw-home`; never use `docker compose down
+   -v` during a normal update.
+
+Existing Hermes installation:
+1. Install the official Plow Chat plugin for the detected Hermes version only
+   if it is missing.
+2. Configure the existing Hermes launcher with AGENT_ID=hermes-cat-paw and
+   the existing HERMES_HOME containing state.db.
+3. Install the official Agent Index client and run its reporter as the Hermes
+   user from the same supervisor that starts Hermes. Supply the existing
+   PLOW_AGENT_TOKEN through the credential manager or launcher, never by
+   printing it. AGENT_ID alone is not enough to report usage.
+4. Validate with the client's `status`, `--self-check`, and `--dry-run` without
+   sending private data. Do not claim success until the reporter is actually
+   configured.
+
+Verification:
+- Ask Hermes to check whether Latch is connected and list only the capabilities
+  it advertises.
+- Ask for one harmless, visible action and wait for my approval.
+- Confirm the result visibly.
+- Check the Agent Index page:
+  https://aiworthusing.com/agent-index/hermes-cat-paw
+```
+
+The agent should stop and explain what is missing if it cannot obtain a valid
+Plow credential or if the owner has not approved a persistent configuration
+change.
+
+## Manual installation
+
+### 1. Install the device side
 
 Hermes Cat Paw uses the [Cat Paw Latch fork](https://github.com/kumanaya/cat-paw-latch)
-as its device-side control plane. Latch shows each proposed operation and the
-owner approves it on the device.
+as its device-side control plane.
 
-On Windows, install Node.js 22+, Git, `just`, Python 3, and Visual Studio Build
-Tools with the Desktop C++ workload. On Linux/Omarchy, install Node.js 22+, Git,
-`just`, Python 3, a C++ toolchain, `bubblewrap`, and Secret Service support.
+Install these prerequisites first:
+
+- **All platforms:** Node.js 22+, Git, Python 3, and `just`.
+- **Windows:** Docker Desktop with the WSL2 engine, Visual Studio Build Tools
+  with the Desktop C++ workload, and Git Bash or WSL2 for shell commands.
+- **Linux/Omarchy:** Docker Engine with the Compose plugin, a C++ toolchain,
+  `bubblewrap`, and Secret Service support.
 
 ```sh
 git clone https://github.com/kumanaya/cat-paw-latch.git
@@ -21,7 +111,7 @@ just app
 
 Sign in inside Latch and leave it running so approval prompts remain visible.
 
-## 2. Install the Hermes agent
+### 2. Install the Hermes agent
 
 ```sh
 git clone https://github.com/kumanaya/hermes-cat-paw.git
@@ -35,12 +125,12 @@ docker compose up --build -d
 docker compose logs -f hermes-cat-paw
 ```
 
-On Windows PowerShell, run the CLI through Python:
+On Windows PowerShell, run the CLI through Python from Git Bash or WSL2:
 
-```powershell
-python ..\plow-agents\bin\plow-agents login --new-line
-python ..\plow-agents\bin\plow-agents lines
-python ..\plow-agents\bin\plow-agents mint <line-uid>
+```sh
+python ../plow-agents/bin/plow-agents login --new-line
+python ../plow-agents/bin/plow-agents lines
+python ../plow-agents/bin/plow-agents mint <line-uid>
 ```
 
 `plow-credentials` is private. Never commit, print, or paste it.
@@ -63,7 +153,7 @@ credential manager or launcher. Never print or copy the token. Before changing a
 persistent launcher, show the owner the proposed change and confirm that it
 preserves the existing Hermes configuration.
 
-## 3. Verify a safe first run
+### 3. Verify a safe first run
 
 Text the Plow line:
 
@@ -74,7 +164,7 @@ capabilities, choose the least-powerful matching tool, wait for approval, and
 verify the result. A denial, timeout, disconnect, MFA request, or host block is
 a stop signal — never bypass it or blindly retry an externally visible action.
 
-## 4. Agent Index and usage
+### 4. Agent Index and usage
 
 The image uses the official Agent Index client. With `AGENT_ID=hermes-cat-paw`,
 the container registers the public page once and reports aggregate model-token
@@ -89,8 +179,9 @@ Keep `hermes-cat-paw-home` between restarts; deleting it creates a new install
 identity and splits the usage history. Check the [Agent Index](https://aiworthusing.com/agent-index)
 after the next reporting cycle.
 
-## Troubleshooting
+### Troubleshooting
 
-- Latch does not open: run `just install` again and check native prerequisites.
+- Latch does not open: check Node.js, native build tools, `just`, and the shell environment.
+- Docker does not start: start Docker Desktop or the Docker Engine and retry `docker compose up --build -d`.
 - No agent response: inspect `docker compose logs hermes-cat-paw` and verify the credential.
 - No ranking usage: check `AGENT_ID`, reporter logs, `--self-check`, and the persistent volume.
