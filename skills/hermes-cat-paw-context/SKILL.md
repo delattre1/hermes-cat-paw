@@ -49,7 +49,20 @@ owner to clone `plow-agents` or assemble the Compose commands manually:
 The installer is idempotent. It skips login when `plow-credentials` already
 exists. On a first install, the only human handoffs are the official phone
 authentication and choosing a line UID after the CLI lists available lines.
-Never print or request the credential contents.
+
+When `plow-agents login` prints a destination number and a line such as
+`Plow Activate: <code>`, relay both values to the owner immediately. Do not tell
+the owner to inspect the terminal, do not invent a number, and do not omit the
+number returned by the installer. Say:
+
+```text
+Send exactly: "Plow Activate: <code>"
+From your phone, send it to: <destination number shown by the installer>
+```
+
+Wait for the owner to reply `feito`, then let the installer continue. Do not
+claim that login succeeded until the command finishes. Never print or request
+the generated `plow-credentials` contents.
 
 ## Existing Hermes installation
 

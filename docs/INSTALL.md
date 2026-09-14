@@ -46,6 +46,16 @@ Safety rules:
 7. Keep Latch running and visible. For the first device check, use only a
    read-only capability check. Never bypass an approval, denial, timeout, MFA,
    disconnect, or host block.
+8. During `plow-agents login`, read the installer output. When it prints a
+   destination number and an activation message, immediately return both to me
+   in chat. Use this format:
+
+      Send exactly: "Plow Activate: <code>"
+      From your phone, send it to: <destination number shown by the installer>
+
+   Do not tell me to look at the terminal and do not invent or omit the number.
+   Wait for me to confirm `feito` after sending the SMS, then continue waiting
+   for the installer to finish. Do not claim login success before it finishes.
 
 Clean installation:
 1. Install the prerequisites for this OS: Node.js 22+, Git, Python 3, just,
