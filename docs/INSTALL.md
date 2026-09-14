@@ -79,8 +79,6 @@ Verification:
   it advertises.
 - Ask for one harmless, visible action and wait for my approval.
 - Confirm the result visibly.
-- Check the Agent Index page:
-  https://aiworthusing.com/agent-index/hermes-cat-paw
 ```
 
 The agent should stop and explain what is missing if it cannot obtain a valid
