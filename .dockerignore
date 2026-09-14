@@ -4,4 +4,5 @@ plow-credentials
 supabase.env
 .env
 plow/.env
+.tools/
 base/

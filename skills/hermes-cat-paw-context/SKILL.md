@@ -40,6 +40,17 @@ When asked to install Hermes Cat Paw, read the public guide first:
 [docs/INSTALL.md](https://github.com/kumanaya/hermes-cat-paw/blob/main/docs/INSTALL.md).
 Use the owner's own Plow account and never ask them to paste a token into chat.
 
+For a clean installation, run the repository's installer instead of asking the
+owner to clone `plow-agents` or assemble the Compose commands manually:
+
+- Linux/Omarchy: `./scripts/install.sh`
+- Windows PowerShell: `Set-ExecutionPolicy -Scope Process Bypass; .\scripts\install.ps1`
+
+The installer is idempotent. It skips login when `plow-credentials` already
+exists. On a first install, the only human handoffs are the official phone
+authentication and choosing a line UID after the CLI lists available lines.
+Never print or request the credential contents.
+
 ## Existing Hermes installation
 
 If Hermes is already installed, do not create a second persona, replace the

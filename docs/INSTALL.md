@@ -54,11 +54,11 @@ Clean installation:
 2. Clone https://github.com/kumanaya/cat-paw-latch.git, run `just install`,
    and run `just app`. Sign in to Latch and leave it running.
 3. Clone https://github.com/kumanaya/hermes-cat-paw.git.
-4. Clone https://github.com/plow-pbc/plow-agents.git beside it.
-5. Use `plow-agents login --new-line` (or the existing free line), list lines,
-   and mint a credential for the selected line. Never display the credential.
-6. Start Hermes Cat Paw with `docker compose up --build -d`.
-7. Keep the named volume `hermes-cat-paw-home`; never use `docker compose down
+4. Run `scripts/install.sh` on Linux/Omarchy or `scripts/install.ps1` on
+   Windows. The installer downloads `plow-agents`, starts the phone login,
+   lists available lines, asks only for the selected line UID, mints the private
+   credential, and starts Docker Compose.
+5. Keep the named volume `hermes-cat-paw-home`; never use `docker compose down
    -v` during a normal update.
 
 Existing Hermes installation:
@@ -161,24 +161,19 @@ Sign in inside Latch and leave it running so approval prompts remain visible.
 ```sh
 git clone https://github.com/kumanaya/hermes-cat-paw.git
 cd hermes-cat-paw
-git clone https://github.com/plow-pbc/plow-agents.git ../plow-agents
-export PATH="$PWD/../plow-agents/bin:$PATH"
-plow-agents login --new-line
-plow-agents lines
-plow-agents mint <line-uid>
-docker compose up --build -d
-docker compose logs -f hermes-cat-paw
+./scripts/install.sh
 ```
 
-On Windows PowerShell, run the CLI through Python from Git Bash or WSL2:
+On Windows PowerShell:
 
-```sh
-python ../plow-agents/bin/plow-agents login --new-line
-python ../plow-agents/bin/plow-agents lines
-python ../plow-agents/bin/plow-agents mint <line-uid>
+```powershell
+Set-ExecutionPolicy -Scope Process Bypass
+.\scripts\install.ps1
 ```
 
-`plow-credentials` is private. Never commit, print, or paste it.
+The installer is idempotent. If `plow-credentials` already exists, it skips
+login and starts the existing installation. The file remains private: never
+commit, print, or paste it.
 
 ### Already have Hermes?
 

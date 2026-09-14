@@ -3,5 +3,6 @@ __pycache__/
 .env
 plow/.env
 plow-credentials
+.tools/
 supabase.env
 .activation.json
