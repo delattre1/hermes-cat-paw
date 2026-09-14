@@ -5,6 +5,7 @@
 # Hermes Cat Paw
 
 [![Agent Index](https://img.shields.io/badge/Agent%20Index-hermes--cat--paw-8bd5ca)](https://aiworthusing.com/agent-index/hermes-cat-paw)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 > **Install:** [docs/INSTALL.md](docs/INSTALL.md) · **Device fork:** [Cat Paw Latch](https://github.com/kumanaya/cat-paw-latch)
 
@@ -314,3 +315,5 @@ capability is available on Omarchy.
 ---
 
 **Real autonomy. Visible permission. Your computer stays yours.**
+
+Hermes Cat Paw is MIT licensed. See [LICENSE](LICENSE).
