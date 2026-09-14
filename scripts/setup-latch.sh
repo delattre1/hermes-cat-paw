@@ -42,9 +42,21 @@ fi
   just install
 )
 
-cat <<EOF
-Cat Paw Latch is ready at $LATCH_DIR
+if [[ "$(uname -s)" == "Linux" ]] && [[ -d /usr/share/omarchy || -n "${OMARCHY:-}" ]]; then
+  if ls "$LATCH_DIR"/apps/desktop/release/Plow-Latch-*.AppImage >/dev/null 2>&1; then
+    (cd "$LATCH_DIR" && just install-desktop) || true
+  fi
+fi
 
+echo "Cat Paw Latch is ready at $LATCH_DIR"
+
+if [[ -n "${DISPLAY:-}" || -n "${WAYLAND_DISPLAY:-}" ]]; then
+  "$ROOT/scripts/start-latch.sh" || {
+    echo "Could not auto-launch Latch. In a visible terminal:" >&2
+    echo "  cd $LATCH_DIR && just app" >&2
+  }
+else
+  cat <<EOF
 Start it in a visible terminal and leave it running:
 
   cd $LATCH_DIR
@@ -55,9 +67,13 @@ On Omarchy, a packaged build also lands in the Apps tab:
   cd $LATCH_DIR
   just package-linux    # builds the AppImage, then just install-desktop
   # or, if the AppImage already exists: just install-desktop
+EOF
+fi
+
+cat <<EOF
 
 Sign in, keep the approval window visible, then continue Hermes setup with
 scripts/install.sh (Linux/Omarchy) or scripts/install.ps1 (Windows). That
-installer mints a free line (or `--line NAME`) and always starts Compose as
+installer mints a free line (or \`--line NAME\`) and always starts Compose as
 AGENT_ID=hermes-cat-paw.
 EOF

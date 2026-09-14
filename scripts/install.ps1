@@ -147,4 +147,5 @@ if (Test-Path -LiteralPath $Credentials -PathType Leaf) {
 $Compose = Join-Path $Root "compose.yml"
 Write-Host "Starting Compose with AGENT_ID=$($env:AGENT_ID)"
 docker compose -f $Compose up --build -d
-docker compose -f $Compose logs --tail=80 hermes-cat-paw
+# Repair sticky-home ledger ownership, wait for state.db, and report as uid hermes.
+& (Join-Path $PSScriptRoot "verify.ps1")

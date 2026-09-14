@@ -130,9 +130,14 @@ creates a new installation identity and splits the usage history.
 After a real conversation, verify the reporter with:
 
 ```sh
-docker compose logs --tail=100 hermes-cat-paw
-docker compose exec hermes-cat-paw /opt/hermes/.venv/bin/python3 /opt/plow/agent-index-client.py --self-check
-docker compose exec hermes-cat-paw /opt/hermes/.venv/bin/python3 /opt/plow/agent-index-client.py --agent hermes-cat-paw --dry-run
+./scripts/verify.sh
+```
+
+That script execs the Index client as uid `hermes`. Do not `docker compose exec` the client as root: `/var/lib/hermes` is sticky, a root-owned ledger cannot be updated by the hourly reporter, and ranking stays at zero. If you must exec by hand:
+
+```sh
+docker compose exec -u hermes -e HOME=/var/lib/hermes -e HERMES_HOME=/var/lib/hermes \
+  hermes-cat-paw /opt/hermes/.venv/bin/python3 /opt/plow/agent-index-client.py --self-check
 ```
 
 Publishing the repository alone does not create a ranking entry. The container
@@ -150,8 +155,8 @@ For the Omarchy or Windows demo, prepare Latch from this repository, then
 launch it on the computer you want Hermes to control:
 
 ```sh
-./scripts/setup-latch.sh   # Linux/Omarchy
-cd ../cat-paw-latch && just app
+./scripts/setup-latch.sh   # Linux/Omarchy; launches Latch when a display is available
+./scripts/start-latch.sh   # if Latch is not already open
 ```
 
 On Omarchy, a packaged AppImage also lands in the Apps tab:

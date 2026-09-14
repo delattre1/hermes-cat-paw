@@ -217,4 +217,6 @@ fi
 
 echo "Starting Compose with AGENT_ID=$AGENT_ID"
 docker compose -f "$ROOT/compose.yml" up --build -d
-docker compose -f "$ROOT/compose.yml" logs --tail=80 hermes-cat-paw
+# Repair sticky-home ledger ownership, wait for state.db, and report as uid hermes.
+# Do not docker compose exec the Index client as root.
+"$ROOT/scripts/verify.sh"
