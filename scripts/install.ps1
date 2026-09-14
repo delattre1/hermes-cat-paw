@@ -1,5 +1,6 @@
 # Provision Hermes Cat Paw: reuse an existing Plow login and free line when
-# present. Do not create a new assistant line unless -NewLine is passed.
+# present. With no -Line, mint the first free dashboard name automatically.
+# Do not create a new assistant line unless -NewLine is passed.
 param(
     [string]$Line,
     [switch]$NewLine
@@ -13,6 +14,8 @@ $Credentials = Join-Path $Root "plow-credentials"
 $Cli = Join-Path $Tools "bin\plow-agents"
 $TokenHome = if ($env:XDG_CONFIG_HOME) { $env:XDG_CONFIG_HOME } else { Join-Path $HOME ".config" }
 $TokenFile = Join-Path $TokenHome "plow\token"
+# Agent Index identity for this product. Never inherit a host AGENT_ID.
+$env:AGENT_ID = "hermes-cat-paw"
 
 function Ensure-Cli {
     if (-not (Test-Path -LiteralPath (Join-Path $Tools ".git"))) {
@@ -128,34 +131,20 @@ if (Test-Path -LiteralPath $Credentials -PathType Leaf) {
     }
 
     if ([string]::IsNullOrWhiteSpace($Line)) {
-        if ([Environment]::UserInteractive -and -not [Console]::IsInputRedirected) {
-            Write-Host ""
-            Write-Host "Free Plow lines (no assistant assigned):"
-            Write-FreeNames
-            Write-Host ""
-            Write-Host "Enter a line name, or 'new' to create another (SMS)."
-            $choice = Read-Host "Line"
-            if ([string]::IsNullOrWhiteSpace($choice)) { throw "A line name is required." }
-            if (@("new", "n") -contains $choice.ToLower()) {
-                $NewLine = $true
-                Invoke-PlowLogin
-                Write-Host ""
-                Write-Host "Free Plow lines:"
-                Write-FreeNames
-                $choice = Read-Host "Line"
-                if ([string]::IsNullOrWhiteSpace($choice)) { throw "A line name is required." }
-            }
-            $Line = $choice
-        } else {
-            Write-Error "install.ps1: pass -Line NAME (free names below) or -NewLine."
-            Write-FreeNames
-            throw "Line name required."
+        $picked = @(Get-FreeLines | Sort-Object Name | Select-Object -First 1)
+        if (-not $picked -or $picked.Count -eq 0) {
+            throw "install.ps1: no free Plow line to mint after login. Pass -NewLine to create one, or delete an assistant in Plow."
         }
+        $Line = $picked[0].Name
+        Write-Host "Free Plow lines (no assistant assigned):"
+        Write-FreeNames
+        Write-Host "Using free line $Line. Pass -Line NAME to override; -NewLine to create another."
     }
 
     Invoke-MintFreeLine $Line
 }
 
 $Compose = Join-Path $Root "compose.yml"
+Write-Host "Starting Compose with AGENT_ID=$($env:AGENT_ID)"
 docker compose -f $Compose up --build -d
 docker compose -f $Compose logs --tail=80 hermes-cat-paw

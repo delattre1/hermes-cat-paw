@@ -224,18 +224,20 @@ skills.
    plow-agents mint <line-uid>
    ```
 
-   The repo installer does this by dashboard name and will not call
-   `--new-line` unless you pass it:
+   The repo installer selects a free line and always boots with
+   `AGENT_ID=hermes-cat-paw`:
 
    ```sh
-   ./scripts/install.sh --line Willow
-   ./scripts/install.sh --new-line   # only to create another line
+   ./scripts/install.sh                 # first free line, product AGENT_ID
+   ./scripts/install.sh --line Willow   # choose a free line by name
+   ./scripts/install.sh --new-line      # only to create another line
    ```
 
    On Windows:
 
    ```powershell
    python $plowAgents mint <line-uid>
+   .\scripts\install.ps1
    .\scripts\install.ps1 -Line Willow
    .\scripts\install.ps1 -NewLine
    ```

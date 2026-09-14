@@ -1,12 +1,16 @@
 #!/usr/bin/env bash
 # Provision Hermes Cat Paw: reuse an existing Plow login and free line when
-# present. Do not create a new assistant line unless --new-line is passed.
+# present. With no --line, mint the first free dashboard name automatically.
+# Do not create a new assistant line unless --new-line is passed.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TOOLS="$ROOT/.tools/plow-agents"
 CREDENTIALS="$ROOT/plow-credentials"
 TOKEN_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/plow/token"
+# Agent Index identity for this product. Never inherit a host AGENT_ID.
+AGENT_ID="hermes-cat-paw"
+export AGENT_ID
 
 LINE=""
 NEW_LINE=0
@@ -15,14 +19,18 @@ usage() {
   cat <<EOF
 Usage: $(basename "$0") [--line NAME] [--new-line]
 
-  --line NAME   Mint a free line by dashboard name (Willow) or uid (ln_p1)
+  --line NAME   Mint this free line by dashboard name (Willow) or uid (ln_p1)
   --new-line    Provision a new assistant line. Requires a phone SMS.
-                Not used when a free line already exists, unless you pass
-                this flag on purpose.
+                Do not pass this when a free line already exists.
 
-If plow-credentials already exists, login and mint are skipped.
-If ~/.config/plow/token already exists, phone login is skipped.
-The picker prints only free line names (no assistant assigned).
+With no flags, the installer is non-interactive after phone login:
+  - skip login when ~/.config/plow/token exists
+  - skip mint when plow-credentials exists
+  - otherwise mint the first free line (no assistant assigned), by name
+  - start Docker Compose with AGENT_ID=hermes-cat-paw
+
+Occupied lines are never minted. Pass --line only to override the automatic
+choice. Do not call plow-agents mint or docker compose by hand.
 EOF
 }
 
@@ -109,6 +117,11 @@ occupied_names() {
   fi
 }
 
+# First free dashboard name, sorted so a non-interactive run is deterministic.
+first_free_name() {
+  lines_tsv | awk -F '\t' '$4 == "free" && $2 != "" { print $2 }' | LC_ALL=C sort | head -n 1
+}
+
 # Resolve a dashboard name, uid, or 1-based free-list index to uid + name + status.
 resolve_line() {
   local query="$1"
@@ -162,29 +175,6 @@ login_account() {
   fi
 }
 
-choose_line_interactively() {
-  local choice
-  echo
-  echo "Free Plow lines (no assistant assigned):"
-  print_free_names
-  echo
-  echo "Enter a line name, or 'new' to create another (SMS)."
-  read -r -p "Line: " choice
-  [[ -n "$choice" ]] || { echo "install.sh: a line name is required." >&2; exit 1; }
-  case "$(lower "$choice")" in
-    new|n|--new-line)
-      NEW_LINE=1
-      login_account
-      echo
-      echo "Free Plow lines:"
-      print_free_names
-      read -r -p "Line: " choice
-      [[ -n "$choice" ]] || { echo "install.sh: a line name is required." >&2; exit 1; }
-      ;;
-  esac
-  LINE="$choice"
-}
-
 if [[ -f "$CREDENTIALS" ]]; then
   echo "Using existing plow-credentials. Skipping Plow login."
 else
@@ -211,17 +201,20 @@ else
   fi
 
   if [[ -z "$LINE" ]]; then
-    if [[ -t 0 ]]; then
-      choose_line_interactively
-    else
-      echo "install.sh: pass --line NAME (free names below) or --new-line." >&2
-      print_free_names >&2
+    LINE="$(first_free_name)"
+    if [[ -z "$LINE" ]]; then
+      echo "install.sh: no free Plow line to mint after login." >&2
+      echo "Pass --new-line to create one, or delete an assistant in Plow." >&2
       exit 1
     fi
+    echo "Free Plow lines (no assistant assigned):"
+    print_free_names
+    echo "Using free line $LINE. Pass --line NAME to override; --new-line to create another."
   fi
 
   mint_free_line "$LINE"
 fi
 
+echo "Starting Compose with AGENT_ID=$AGENT_ID"
 docker compose -f "$ROOT/compose.yml" up --build -d
 docker compose -f "$ROOT/compose.yml" logs --tail=80 hermes-cat-paw

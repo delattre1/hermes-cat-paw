@@ -3,14 +3,16 @@ name: hermes-cat-paw
 services:
   hermes-cat-paw:
     # Hermes Cat Paw runs on the official Hermes base image.
-    # Build: ~1min a frio (quase tudo é o pull upstream, público e anônimo).
+    # Cold build is mostly the public upstream pull.
     build: .
     environment:
-      AGENT_ID: ${AGENT_ID:-hermes-cat-paw}
+      # Product identity for the Agent Index. Literal on purpose: do not
+      # interpolate a host AGENT_ID, or usage reports as a different agent.
+      AGENT_ID: hermes-cat-paw
     volumes:
-      # Criado por `plow-agents mint`; nunca commitar este arquivo.
+      # Created by `plow-agents mint`; never commit this file.
       - ./plow-credentials:/var/lib/plow/credentials.host:ro
-      # Home do agente (sessions, setup). `down -v` começa do zero.
+      # Agent home (sessions, setup). `down -v` starts from scratch.
       - hermes-cat-paw-home:/var/lib/hermes
     stop_grace_period: 35s
 

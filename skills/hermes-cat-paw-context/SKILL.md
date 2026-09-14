@@ -63,9 +63,11 @@ instead of asking the owner to clone `plow-agents` or assemble Compose by hand:
 The installer is idempotent. It skips mint when `plow-credentials` already
 exists, and skips phone login when `~/.config/plow/token` already exists. Do
 not pass `--new-line` unless the owner asks for another line or there is no
-free line left. On a first install, the only human handoffs are the official
-phone authentication and choosing a free line by dashboard name after the CLI
-lists those names.
+free line left. The only required human handoff is phone authentication. A
+free line may be selected with `--line NAME`; with no flag the installer mints
+the first free dashboard name. Occupied lines are skipped. Compose always
+starts with `AGENT_ID=hermes-cat-paw`. Do not change that identity, do not
+mint by hand, and do not start Compose yourself.
 
 When `plow-agents login` prints a destination number and a line such as
 `Plow Activate: <code>`, relay both values to the owner immediately. Do not tell
@@ -78,14 +80,12 @@ From your phone, send it to: <destination number shown by the installer>
 ```
 
 Wait for the owner to reply `feito`, then let the installer continue. Do not
-claim that login succeeded until the command finishes. After login, or when a
-token is already present, present only the names of free lines (no assistant
-assigned). Ask which name to use, then run `./scripts/install.sh --line <Name>`
-(Windows: `.\scripts\install.ps1 -Line <Name>`), start Compose, inspect the
-logs, and continue troubleshooting until Hermes Cat Paw is running.
-Do not stop at a command explanation or ask the owner to complete the remaining
-steps manually. Never print or request the generated `plow-credentials`
-contents.
+claim that login succeeded until the command finishes. Run
+`./scripts/install.sh` (Windows: `.\scripts\install.ps1`) to completion. Pass
+`--line NAME` / `-Line NAME` only to pick a specific free line; otherwise the
+installer mints the first free name. Never change `AGENT_ID`; it is always
+`hermes-cat-paw`. Do not run `plow-agents mint` or `docker compose` yourself.
+Inspect logs until the container is running with that identity.
 
 ## Existing Hermes installation
 

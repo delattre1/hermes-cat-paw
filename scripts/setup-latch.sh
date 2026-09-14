@@ -57,5 +57,7 @@ On Omarchy, a packaged build also lands in the Apps tab:
   # or, if the AppImage already exists: just install-desktop
 
 Sign in, keep the approval window visible, then continue Hermes setup with
-scripts/install.sh (Linux/Omarchy) or scripts/install.ps1 (Windows).
+scripts/install.sh (Linux/Omarchy) or scripts/install.ps1 (Windows). That
+installer mints a free line (or `--line NAME`) and always starts Compose as
+AGENT_ID=hermes-cat-paw.
 EOF
