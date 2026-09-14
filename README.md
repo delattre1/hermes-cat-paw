@@ -162,7 +162,7 @@ just package-linux         # build + install-desktop
 # or just install-desktop  # if the AppImage is already in apps/desktop/release/
 ```
 
-Then open the Apps tab and look for **Cat Paw Latch**. If it is missing,
+Then open the Apps tab and look for **Plow Latch**. If it is missing,
 `omarchy restart shell`.
 
 On Windows, run `.\scripts\setup-latch.ps1` then `just app` in the Latch

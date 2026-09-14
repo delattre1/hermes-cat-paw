@@ -83,7 +83,7 @@ Clean installation:
    runs `just install`, which downloads Electron when npm skipped the binary.
    Then run `just app` from the Latch checkout in a visible terminal. On
    Omarchy, if a packaged AppImage exists, run `just install-desktop` in the
-   Latch checkout so Cat Paw Latch appears in the Apps tab. Sign in and leave
+   Latch checkout so Plow Latch appears in the Apps tab. Sign in and leave
    it running. Do not stop after printing the clone commands.
 3. Run `scripts/install.sh` on Linux/Omarchy or `scripts/install.ps1` on
    Windows and let it finish. Optional `--line NAME` selects a free line;
@@ -214,7 +214,7 @@ just package-linux      # builds the AppImage and runs just install-desktop
 just install-desktop
 ```
 
-Open the Apps tab and look for **Cat Paw Latch**. If it is missing, run
+Open the Apps tab and look for **Plow Latch**. If it is missing, run
 `omarchy restart shell`.
 
 Sign in inside Latch and leave it running so approval prompts remain visible.

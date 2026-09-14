@@ -35,7 +35,7 @@ a missing `node_modules/electron/dist/electron` is why `just app` used to fail
 on a fresh Linux machine. Then run `just app` from the Latch checkout in a
 visible terminal. Open Latch, sign in, and keep it running so approval prompts
 remain visible. On Omarchy, after `just package-linux` (or `just install-desktop`
-when the AppImage already exists), Cat Paw Latch appears in the Apps tab.
+when the AppImage already exists), Plow Latch appears in the Apps tab.
 From-source Linux state is `~/.config/Plow-Latch-<branch>`, not
 `~/Library/Application Support`. Do not claim that a release installer or
 AppImage exists unless the repository actually publishes one. If the owner
