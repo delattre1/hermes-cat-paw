@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+plow-credentials
+supabase.env
+.env
+plow/.env
+base/
