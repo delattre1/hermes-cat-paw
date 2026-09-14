@@ -48,7 +48,8 @@ Safety rules:
    action that could replace existing Hermes state. Explain the exact change.
 7. Keep Latch running and visible. For the first device check, use only a
    read-only capability check. Never bypass an approval, denial, timeout, MFA,
-   disconnect, or host block.
+   disconnect, or host block. On Linux/Omarchy, Latch from-source state lives
+   in ~/.config/Plow-Latch-<branch>, not ~/Library/Application Support.
 8. During `plow-agents login`, read the installer output. When it prints a
    destination number and an activation message, immediately return both to me
    in chat. Use this format:
@@ -59,26 +60,42 @@ Safety rules:
    Do not tell me to look at the terminal and do not invent or omit the number.
    Wait for me to confirm `feito` after sending the SMS, then continue waiting
    for the installer to finish. Do not claim login success before it finishes.
-9. Continue guiding me through every remaining step. After login succeeds,
-   show me the available line UIDs and ask only which UID I want to use. After
-   I choose one, mint the credential, start Docker Compose, inspect the logs,
-   and keep troubleshooting until Hermes Cat Paw is running. Do not stop after
-   explaining a command for me to run manually.
+9. Run `scripts/install.sh` (Linux/Omarchy) or `scripts/install.ps1` (Windows)
+   and let that one command finish. You may pass `--line NAME` / `-Line NAME`
+   to select a free line (Willow, Aspen, …). Occupied lines are not valid.
+   With no `--line`, the installer mints the first free name. Do not run
+   `plow-agents mint` or `docker compose` yourself. Never set, override, or
+   ask me to paste AGENT_ID: it is always `hermes-cat-paw` in compose.yml.
+   Pass `--new-line` / `-NewLine` only after I confirm I want another number.
+   During phone login, relay the SMS as in rule 8, wait for `feito`, then let
+   the same installer process start Compose. Confirm the container env is
+   AGENT_ID=hermes-cat-paw. Keep troubleshooting until it is. Do not stop
+   after explaining a command for me to run manually.
 
 Clean installation:
 1. Install the prerequisites for this OS: Node.js 22+, Git, Python 3, just,
    Docker with Compose, and the platform-native build dependencies described
-   in this guide.
-2. Clone https://github.com/kumanaya/cat-paw-latch.git, run `just install`,
-   and run `just app`. Sign in to Latch and leave it running.
-3. Clone https://github.com/kumanaya/hermes-cat-paw.git.
-4. Run `scripts/install.sh` on Linux/Omarchy or `scripts/install.ps1` on
-   Windows. The installer downloads `plow-agents`, starts the phone login,
-   lists available lines, asks only for the selected line UID, mints the private
-   credential, and starts Docker Compose. During phone login, relay the exact
-   activation message and destination number printed by the installer; do not
-   make the user search the terminal.
-5. Keep the named volume `hermes-cat-paw-home`; never use `docker compose down
+   in this guide. On Arch/Omarchy also install `base-devel`, `bubblewrap`,
+   and `fuse2` (`sudo pacman -S --needed base-devel just git python bubblewrap fuse2`).
+2. Clone https://github.com/kumanaya/hermes-cat-paw.git. From that checkout
+   run `scripts/setup-latch.sh` on Linux/Omarchy (or `scripts/setup-latch.ps1`
+   on Windows). That clones Cat Paw Latch next to this repo if needed and
+   runs `just install`, which downloads Electron when npm skipped the binary.
+   Then run `just app` from the Latch checkout in a visible terminal. On
+   Omarchy, if a packaged AppImage exists, run `just install-desktop` in the
+   Latch checkout so Cat Paw Latch appears in the Apps tab. Sign in and leave
+   it running. Do not stop after printing the clone commands.
+3. Run `scripts/install.sh` on Linux/Omarchy or `scripts/install.ps1` on
+   Windows and let it finish. Optional `--line NAME` selects a free line;
+   otherwise the first free name is minted. Do not mint or start Compose by
+   hand. If an account token already exists it skips phone login; if
+   `plow-credentials` already exists it skips mint. Compose always starts with
+   AGENT_ID=hermes-cat-paw; do not override it from the host environment. It
+   does not create a new line unless `--new-line` / `-NewLine` is passed after
+   I confirm. During phone login, relay the exact activation message and
+   destination number printed by the installer; do not make the user search
+   the terminal.
+4. Keep the named volume `hermes-cat-paw-home`; never use `docker compose down
    -v` during a normal update.
 
 Existing Hermes installation:
@@ -165,14 +182,40 @@ Install these prerequisites first:
 - **Windows:** Docker Desktop with the WSL2 engine, Visual Studio Build Tools
   with the Desktop C++ workload, and Git Bash or WSL2 for shell commands.
 - **Linux/Omarchy:** Docker Engine with the Compose plugin, a C++ toolchain,
-  `bubblewrap`, and Secret Service support.
+  `bubblewrap`, Secret Service support, and `fuse2` if you will run an AppImage.
+  On Arch/Omarchy:
+
+  ```sh
+  sudo pacman -S --needed base-devel just git python bubblewrap fuse2 docker
+  ```
+
+From this repository (do not assemble the Latch clone by hand unless setup-latch
+cannot run):
 
 ```sh
-git clone https://github.com/kumanaya/cat-paw-latch.git
-cd cat-paw-latch
-just install
+git clone https://github.com/kumanaya/hermes-cat-paw.git
+cd hermes-cat-paw
+./scripts/setup-latch.sh
+cd ../cat-paw-latch
 just app
 ```
+
+On Windows PowerShell, run `.\scripts\setup-latch.ps1` instead of the `.sh`.
+`just install` (run by setup-latch) downloads the Electron binary if npm skipped
+it — that skip is why a bare `npm install` can leave `just app` with no desktop
+binary. From-source Linux state is `~/.config/Plow-Latch-<branch>`.
+
+On Omarchy, after a packaged build, install it into the Apps tab:
+
+```sh
+cd ../cat-paw-latch
+just package-linux      # builds the AppImage and runs just install-desktop
+# or, if the AppImage already exists:
+just install-desktop
+```
+
+Open the Apps tab and look for **Cat Paw Latch**. If it is missing, run
+`omarchy restart shell`.
 
 Sign in inside Latch and leave it running so approval prompts remain visible.
 
@@ -192,8 +235,10 @@ Set-ExecutionPolicy -Scope Process Bypass
 ```
 
 The installer is idempotent. If `plow-credentials` already exists, it skips
-login and starts the existing installation. The file remains private: never
-commit, print, or paste it.
+login and mint. If `~/.config/plow/token` already exists, it skips phone login
+and mints the first free line by name. Pass `--new-line` only to create another
+assistant line. The credential file remains private: never commit, print, or
+paste it.
 
 ### Already have Hermes?
 
@@ -261,7 +306,7 @@ a stop signal — never bypass it or blindly retry an externally visible action.
 
 ### Troubleshooting
 
-- Latch does not open: check Node.js, native build tools, `just`, and the shell environment.
+- Latch does not open: check Node.js 22+, native build tools, `just`, and `bwrap` on Linux. Run `just install` in the Latch checkout so Electron is actually downloaded, then `just app`. From-source Linux home is `~/.config/Plow-Latch-<branch>`, not `~/Library/Application Support`.
 - Docker does not start: start Docker Desktop or the Docker Engine and retry `docker compose up --build -d`.
 - No agent response: inspect `docker compose logs hermes-cat-paw` and verify the credential.
 - No ranking usage: check `AGENT_ID`, reporter logs, `--self-check`, and the persistent volume.

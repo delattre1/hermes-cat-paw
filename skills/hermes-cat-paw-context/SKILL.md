@@ -26,15 +26,23 @@ it, broaden it, or retry an externally visible action blindly. After approval,
 verify the visible result before reporting success.
 
 Install [Hermes Cat Paw's Latch fork](https://github.com/kumanaya/cat-paw-latch)
-on the device first. This fork currently builds from source: on Windows install
-the C++ build tools, and on Linux/Omarchy install the native prerequisites, then
-run `just install` followed by `just app` from the checkout. Open Latch, sign
-in, and keep it running so approval prompts remain visible. Do not claim that a
-release installer or AppImage exists unless the repository actually publishes
-one. If the owner already has Hermes and the Plow Chat plugin, use that
-installation and its configured skills. If the plugin is missing, follow the
-official installation instructions for the owner's Hermes version and download
-the plugin rather than copying this repository's internal files.
+on the device first. On Arch/Omarchy install `base-devel just git python
+bubblewrap fuse2` (and Node.js 22+). From this repository run
+`scripts/setup-latch.sh` (Linux/Omarchy) or `scripts/setup-latch.ps1` (Windows);
+that clones Latch next to this checkout if needed and runs `just install`.
+`just install` downloads the Electron binary when npm skipped the postinstall —
+a missing `node_modules/electron/dist/electron` is why `just app` used to fail
+on a fresh Linux machine. Then run `just app` from the Latch checkout in a
+visible terminal. Open Latch, sign in, and keep it running so approval prompts
+remain visible. On Omarchy, after `just package-linux` (or `just install-desktop`
+when the AppImage already exists), Cat Paw Latch appears in the Apps tab.
+From-source Linux state is `~/.config/Plow-Latch-<branch>`, not
+`~/Library/Application Support`. Do not claim that a release installer or
+AppImage exists unless the repository actually publishes one. If the owner
+already has Hermes and the Plow Chat plugin, use that installation and its
+configured skills. If the plugin is missing, follow the official installation
+instructions for the owner's Hermes version and download the plugin rather than
+copying this repository's internal files.
 
 When asked to install Hermes Cat Paw, read the public guide first:
 [docs/INSTALL.md](https://github.com/kumanaya/hermes-cat-paw/blob/main/docs/INSTALL.md).
@@ -43,15 +51,23 @@ The temporary `Plow Activate: <code>` message and the destination number
 printed by `plow-agents login` are not credentials; they are safe activation
 instructions and must be relayed verbatim to the owner.
 
-For a clean installation, run the repository's installer instead of asking the
-owner to clone `plow-agents` or assemble the Compose commands manually:
+For a clean installation, prepare Latch first, then run the Hermes installer
+instead of asking the owner to clone `plow-agents` or assemble Compose by hand:
 
-- Linux/Omarchy: `./scripts/install.sh`
-- Windows PowerShell: `Set-ExecutionPolicy -Scope Process Bypass; .\scripts\install.ps1`
+- Linux/Omarchy: `./scripts/setup-latch.sh`, then `just app` in the Latch
+  checkout. If the owner wants it in the Omarchy Apps tab, also run
+  `just package-linux` (or `just install-desktop` when the AppImage already
+  exists) in the Latch checkout, then `./scripts/install.sh`
+- Windows PowerShell: `Set-ExecutionPolicy -Scope Process Bypass; .\scripts\setup-latch.ps1`, then `just app` in the Latch checkout, then `.\scripts\install.ps1`
 
-The installer is idempotent. It skips login when `plow-credentials` already
-exists. On a first install, the only human handoffs are the official phone
-authentication and choosing a line UID after the CLI lists available lines.
+The installer is idempotent. It skips mint when `plow-credentials` already
+exists, and skips phone login when `~/.config/plow/token` already exists. Do
+not pass `--new-line` unless the owner asks for another line or there is no
+free line left. The only required human handoff is phone authentication. A
+free line may be selected with `--line NAME`; with no flag the installer mints
+the first free dashboard name. Occupied lines are skipped. Compose always
+starts with `AGENT_ID=hermes-cat-paw`. Do not change that identity, do not
+mint by hand, and do not start Compose yourself.
 
 When `plow-agents login` prints a destination number and a line such as
 `Plow Activate: <code>`, relay both values to the owner immediately. Do not tell
@@ -64,12 +80,13 @@ From your phone, send it to: <destination number shown by the installer>
 ```
 
 Wait for the owner to reply `feito`, then let the installer continue. Do not
-claim that login succeeded until the command finishes. After login, present the
-available line UIDs, ask which one to use, mint the credential, start Compose,
-inspect the logs, and continue troubleshooting until Hermes Cat Paw is running.
-Do not stop at a command explanation or ask the owner to complete the remaining
-steps manually. Never print or request the generated `plow-credentials`
-contents.
+claim that login succeeded until the command finishes. Run
+`./scripts/install.sh` (Windows: `.\scripts\install.ps1`) to completion. Pass
+`--line NAME` / `-Line NAME` only to pick a specific free line; otherwise the
+installer mints the first free name. Never change `AGENT_ID`; it is always
+`hermes-cat-paw`. Do not run `plow-agents mint` or `docker compose` yourself.
+Inspect logs until the container is running with that identity.
+Never print or request the generated `plow-credentials` contents.
 
 ## Existing Hermes installation
 
