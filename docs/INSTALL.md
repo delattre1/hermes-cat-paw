@@ -36,7 +36,10 @@ Safety rules:
    skills, provider settings, credentials, and launcher. Do not delete files,
    reset volumes, replace config.yaml, or create a second persona.
 3. Never print, request, paste, commit, or send passwords, tokens, cookies,
-   one-time codes, plow-credentials, or PLOW_AGENT_TOKEN in chat or logs.
+   plow-credentials, or PLOW_AGENT_TOKEN in chat or logs. The temporary
+   `Plow Activate: <code>` message and destination number printed by
+   `plow-agents login` are safe activation instructions and must be relayed to
+   me verbatim so I can complete the phone verification.
 4. Use the official Plow tooling and plugin for the installed Hermes version.
    Do not clone or copy private credentials into this repository.
 5. On Windows, use Git Bash or WSL2 for commands that need sh/bash. Do not
@@ -56,6 +59,11 @@ Safety rules:
    Do not tell me to look at the terminal and do not invent or omit the number.
    Wait for me to confirm `feito` after sending the SMS, then continue waiting
    for the installer to finish. Do not claim login success before it finishes.
+9. Continue guiding me through every remaining step. After login succeeds,
+   show me the available line UIDs and ask only which UID I want to use. After
+   I choose one, mint the credential, start Docker Compose, inspect the logs,
+   and keep troubleshooting until Hermes Cat Paw is running. Do not stop after
+   explaining a command for me to run manually.
 
 Clean installation:
 1. Install the prerequisites for this OS: Node.js 22+, Git, Python 3, just,
@@ -67,7 +75,9 @@ Clean installation:
 4. Run `scripts/install.sh` on Linux/Omarchy or `scripts/install.ps1` on
    Windows. The installer downloads `plow-agents`, starts the phone login,
    lists available lines, asks only for the selected line UID, mints the private
-   credential, and starts Docker Compose.
+   credential, and starts Docker Compose. During phone login, relay the exact
+   activation message and destination number printed by the installer; do not
+   make the user search the terminal.
 5. Keep the named volume `hermes-cat-paw-home`; never use `docker compose down
    -v` during a normal update.
 

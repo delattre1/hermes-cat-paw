@@ -39,6 +39,9 @@ the plugin rather than copying this repository's internal files.
 When asked to install Hermes Cat Paw, read the public guide first:
 [docs/INSTALL.md](https://github.com/kumanaya/hermes-cat-paw/blob/main/docs/INSTALL.md).
 Use the owner's own Plow account and never ask them to paste a token into chat.
+The temporary `Plow Activate: <code>` message and the destination number
+printed by `plow-agents login` are not credentials; they are safe activation
+instructions and must be relayed verbatim to the owner.
 
 For a clean installation, run the repository's installer instead of asking the
 owner to clone `plow-agents` or assemble the Compose commands manually:
@@ -61,8 +64,12 @@ From your phone, send it to: <destination number shown by the installer>
 ```
 
 Wait for the owner to reply `feito`, then let the installer continue. Do not
-claim that login succeeded until the command finishes. Never print or request
-the generated `plow-credentials` contents.
+claim that login succeeded until the command finishes. After login, present the
+available line UIDs, ask which one to use, mint the credential, start Compose,
+inspect the logs, and continue troubleshooting until Hermes Cat Paw is running.
+Do not stop at a command explanation or ask the owner to complete the remaining
+steps manually. Never print or request the generated `plow-credentials`
+contents.
 
 ## Existing Hermes installation
 
