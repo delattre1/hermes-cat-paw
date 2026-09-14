@@ -126,7 +126,6 @@ Verification:
   it advertises.
 - Ask for one harmless, visible action and wait for my approval.
 - Confirm the result visibly.
-```
 
 The agent should stop and explain what is missing if it cannot obtain a valid
 Plow credential or if the owner has not approved a persistent configuration
