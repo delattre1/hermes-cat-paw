@@ -86,6 +86,7 @@ claim that login succeeded until the command finishes. Run
 installer mints the first free name. Never change `AGENT_ID`; it is always
 `hermes-cat-paw`. Do not run `plow-agents mint` or `docker compose` yourself.
 Inspect logs until the container is running with that identity.
+Never print or request the generated `plow-credentials` contents.
 
 ## Existing Hermes installation
 
