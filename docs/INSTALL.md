@@ -73,6 +73,7 @@ Existing Hermes installation:
 4. Validate with the client's `status`, `--self-check`, and `--dry-run` without
    sending private data. Do not claim success until the reporter is actually
    configured.
+```
 
 Prompt for an existing Hermes installation:
 
@@ -242,21 +243,6 @@ Then ask for one harmless visible action. The agent must inspect advertised
 capabilities, choose the least-powerful matching tool, wait for approval, and
 verify the result. A denial, timeout, disconnect, MFA request, or host block is
 a stop signal — never bypass it or blindly retry an externally visible action.
-
-### 4. Agent Index and usage
-
-The image uses the official Agent Index client. With `AGENT_ID=hermes-cat-paw`,
-the container registers the public page once and reports aggregate model-token
-usage hourly. It does not send prompts, task text, files, paths, or secrets.
-
-```sh
-docker compose exec hermes-cat-paw /opt/hermes/.venv/bin/python3 /opt/plow/agent-index-client.py --self-check
-docker compose exec hermes-cat-paw /opt/hermes/.venv/bin/python3 /opt/plow/agent-index-client.py --agent hermes-cat-paw --dry-run
-```
-
-Keep `hermes-cat-paw-home` between restarts; deleting it creates a new install
-identity and splits the usage history. Check the [Agent Index](https://aiworthusing.com/agent-index)
-after the next reporting cycle.
 
 ### Troubleshooting
 
