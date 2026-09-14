@@ -34,7 +34,9 @@ that clones Latch next to this checkout if needed and runs `just install`.
 a missing `node_modules/electron/dist/electron` is why `just app` used to fail
 on a fresh Linux machine. Then run `just app` from the Latch checkout in a
 visible terminal. Open Latch, sign in, and keep it running so approval prompts
-remain visible. From-source Linux state is `~/.config/Plow-Latch-<branch>`, not
+remain visible. On Omarchy, after `just package-linux` (or `just install-desktop`
+when the AppImage already exists), Cat Paw Latch appears in the Apps tab.
+From-source Linux state is `~/.config/Plow-Latch-<branch>`, not
 `~/Library/Application Support`. Do not claim that a release installer or
 AppImage exists unless the repository actually publishes one. If the owner
 already has Hermes and the Plow Chat plugin, use that installation and its
@@ -53,7 +55,9 @@ For a clean installation, prepare Latch first, then run the Hermes installer
 instead of asking the owner to clone `plow-agents` or assemble Compose by hand:
 
 - Linux/Omarchy: `./scripts/setup-latch.sh`, then `just app` in the Latch
-  checkout, then `./scripts/install.sh`
+  checkout. If the owner wants it in the Omarchy Apps tab, also run
+  `just package-linux` (or `just install-desktop` when the AppImage already
+  exists) in the Latch checkout, then `./scripts/install.sh`
 - Windows PowerShell: `Set-ExecutionPolicy -Scope Process Bypass; .\scripts\setup-latch.ps1`, then `just app` in the Latch checkout, then `.\scripts\install.ps1`
 
 The installer is idempotent. It skips login when `plow-credentials` already

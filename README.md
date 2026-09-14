@@ -153,6 +153,17 @@ launch it on the computer you want Hermes to control:
 cd ../cat-paw-latch && just app
 ```
 
+On Omarchy, a packaged AppImage also lands in the Apps tab:
+
+```sh
+cd ../cat-paw-latch
+just package-linux         # build + install-desktop
+# or just install-desktop  # if the AppImage is already in apps/desktop/release/
+```
+
+Then open the Apps tab and look for **Cat Paw Latch**. If it is missing,
+`omarchy restart shell`.
+
 On Windows, run `.\scripts\setup-latch.ps1` then `just app` in the Latch
 checkout. `setup-latch` clones [kumanaya/cat-paw-latch](https://github.com/kumanaya/cat-paw-latch)
 if needed and runs `just install` so Electron is actually downloaded.

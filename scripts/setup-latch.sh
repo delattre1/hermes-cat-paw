@@ -50,6 +50,12 @@ Start it in a visible terminal and leave it running:
   cd $LATCH_DIR
   just app
 
+On Omarchy, a packaged build also lands in the Apps tab:
+
+  cd $LATCH_DIR
+  just package-linux    # builds the AppImage, then just install-desktop
+  # or, if the AppImage already exists: just install-desktop
+
 Sign in, keep the approval window visible, then continue Hermes setup with
 scripts/install.sh (Linux/Omarchy) or scripts/install.ps1 (Windows).
 EOF

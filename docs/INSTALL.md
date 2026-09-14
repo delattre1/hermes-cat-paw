@@ -75,8 +75,10 @@ Clean installation:
    run `scripts/setup-latch.sh` on Linux/Omarchy (or `scripts/setup-latch.ps1`
    on Windows). That clones Cat Paw Latch next to this repo if needed and
    runs `just install`, which downloads Electron when npm skipped the binary.
-   Then run `just app` from the Latch checkout in a visible terminal. Sign in
-   and leave it running. Do not stop after printing the clone commands.
+   Then run `just app` from the Latch checkout in a visible terminal. On
+   Omarchy, if a packaged AppImage exists, run `just install-desktop` in the
+   Latch checkout so Cat Paw Latch appears in the Apps tab. Sign in and leave
+   it running. Do not stop after printing the clone commands.
 3. Run `scripts/install.sh` on Linux/Omarchy or `scripts/install.ps1` on
    Windows. The installer downloads `plow-agents`, starts the phone login,
    lists available lines, asks only for the selected line UID, mints the private
@@ -192,6 +194,18 @@ On Windows PowerShell, run `.\scripts\setup-latch.ps1` instead of the `.sh`.
 `just install` (run by setup-latch) downloads the Electron binary if npm skipped
 it — that skip is why a bare `npm install` can leave `just app` with no desktop
 binary. From-source Linux state is `~/.config/Plow-Latch-<branch>`.
+
+On Omarchy, after a packaged build, install it into the Apps tab:
+
+```sh
+cd ../cat-paw-latch
+just package-linux      # builds the AppImage and runs just install-desktop
+# or, if the AppImage already exists:
+just install-desktop
+```
+
+Open the Apps tab and look for **Cat Paw Latch**. If it is missing, run
+`omarchy restart shell`.
 
 Sign in inside Latch and leave it running so approval prompts remain visible.
 
