@@ -60,11 +60,16 @@ Safety rules:
    Do not tell me to look at the terminal and do not invent or omit the number.
    Wait for me to confirm `feito` after sending the SMS, then continue waiting
    for the installer to finish. Do not claim login success before it finishes.
-9. Continue guiding me through every remaining step. After login succeeds,
-   show me the available line UIDs and ask only which UID I want to use. After
-   I choose one, mint the credential, start Docker Compose, inspect the logs,
-   and keep troubleshooting until Hermes Cat Paw is running. Do not stop after
-   explaining a command for me to run manually.
+9. Continue guiding me through every remaining step. Do not run
+   `plow-agents login --new-line` (or `install.sh --new-line`) if
+   `~/.config/plow/token` already exists or if `plow-agents lines` already
+   shows a free line. After login, or when a token is already present, print
+   only the names of free lines (no assistant assigned). Ask which name I want.
+   Occupied names are not choices. After I choose, run
+   `./scripts/install.sh --line <Name>` (or `.\scripts\install.ps1 -Line <Name>`),
+   inspect the logs, and keep troubleshooting until Hermes Cat Paw is running.
+   Do not stop after explaining a command for me to run manually. To create an
+   extra line on purpose, wait for confirmation and then pass `--new-line`.
 
 Clean installation:
 1. Install the prerequisites for this OS: Node.js 22+, Git, Python 3, just,
@@ -80,11 +85,13 @@ Clean installation:
    Latch checkout so Cat Paw Latch appears in the Apps tab. Sign in and leave
    it running. Do not stop after printing the clone commands.
 3. Run `scripts/install.sh` on Linux/Omarchy or `scripts/install.ps1` on
-   Windows. The installer downloads `plow-agents`, starts the phone login,
-   lists available lines, asks only for the selected line UID, mints the private
-   credential, and starts Docker Compose. During phone login, relay the exact
-   activation message and destination number printed by the installer; do not
-   make the user search the terminal.
+   Windows. The installer downloads `plow-agents`. If an account token already
+   exists it skips phone login; if `plow-credentials` already exists it skips
+   mint too. It lists only free line names (no assistant assigned), asks which
+   name to use, mints that line, and starts Docker Compose. It does not create
+   a new line unless `--new-line` / `-NewLine` is passed. During phone login,
+   relay the exact activation message and destination number printed by the
+   installer; do not make the user search the terminal.
 4. Keep the named volume `hermes-cat-paw-home`; never use `docker compose down
    -v` during a normal update.
 
@@ -225,8 +232,10 @@ Set-ExecutionPolicy -Scope Process Bypass
 ```
 
 The installer is idempotent. If `plow-credentials` already exists, it skips
-login and starts the existing installation. The file remains private: never
-commit, print, or paste it.
+login and mint. If `~/.config/plow/token` already exists, it skips phone login
+and lists only free line names. Pass `--new-line` only to create another
+assistant line. The credential file remains private: never commit, print, or
+paste it.
 
 ### Already have Hermes?
 

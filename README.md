@@ -197,34 +197,46 @@ skills.
    $plowAgents = "$(Get-Location)\plow-agents\bin\plow-agents"
    ```
 
-2. On Linux, log in and create an assistant line if you do not already have one:
+2. On Linux, log in. Skip this if `~/.config/plow/token` already exists.
 
    ```sh
-   plow-agents login --new-line
+   plow-agents login
    plow-agents lines
    ```
 
-   `login --new-line` is an official option that creates the line. If you
-   already have a free line, use `plow-agents login` and select it with
-   `plow-agents lines` instead.
+   Use `login --new-line` only when you want Plow to create another assistant
+   line. If a line is already free, mint that one instead of provisioning a
+   new number.
 
    On Windows, prefix those commands with `python $plowAgents`:
 
    ```powershell
-   python $plowAgents login --new-line
+   python $plowAgents login
    python $plowAgents lines
    ```
 
-3. Mint the credential file for the selected line:
+3. Mint the credential file for a free line (name or uid). Occupied lines
+   such as a cloud agent cannot be minted until that assistant is deleted in
+   Plow:
 
    ```sh
    plow-agents mint <line-uid>
+   ```
+
+   The repo installer does this by dashboard name and will not call
+   `--new-line` unless you pass it:
+
+   ```sh
+   ./scripts/install.sh --line Willow
+   ./scripts/install.sh --new-line   # only to create another line
    ```
 
    On Windows:
 
    ```powershell
    python $plowAgents mint <line-uid>
+   .\scripts\install.ps1 -Line Willow
+   .\scripts\install.ps1 -NewLine
    ```
 
    This creates `./plow-credentials`. It is mounted into the container by

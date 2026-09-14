@@ -1,22 +1,159 @@
+# Provision Hermes Cat Paw: reuse an existing Plow login and free line when
+# present. Do not create a new assistant line unless -NewLine is passed.
+param(
+    [string]$Line,
+    [switch]$NewLine
+)
+
 $ErrorActionPreference = "Stop"
 
 $Root = Split-Path -Parent $PSScriptRoot
 $Tools = Join-Path $Root ".tools\plow-agents"
 $Credentials = Join-Path $Root "plow-credentials"
 $Cli = Join-Path $Tools "bin\plow-agents"
+$TokenHome = if ($env:XDG_CONFIG_HOME) { $env:XDG_CONFIG_HOME } else { Join-Path $HOME ".config" }
+$TokenFile = Join-Path $TokenHome "plow\token"
 
-if (-not (Test-Path -LiteralPath $Credentials -PathType Leaf)) {
+function Ensure-Cli {
     if (-not (Test-Path -LiteralPath (Join-Path $Tools ".git"))) {
         New-Item -ItemType Directory -Force -Path (Split-Path -Parent $Tools) | Out-Null
         git clone https://github.com/plow-pbc/plow-agents.git $Tools
     }
-    python $Cli login --new-line
-    python $Cli lines
-    $LineUid = Read-Host "Enter the free line UID to use"
-    if ([string]::IsNullOrWhiteSpace($LineUid)) { throw "A line UID is required." }
-    python $Cli mint $LineUid
-} else {
+}
+
+function Invoke-PlowLogin {
+    if ($NewLine) {
+        Write-Host "Provisioning a new assistant line (phone SMS)."
+        python $Cli login --new-line
+    } else {
+        python $Cli login
+    }
+}
+
+function Test-AccountToken {
+    return (Test-Path -LiteralPath $TokenFile -PathType Leaf) -and ((Get-Item -LiteralPath $TokenFile).Length -gt 0)
+}
+
+function Get-PlowLines {
+    $rows = @()
+    $output = python $Cli lines 2>&1
+    foreach ($raw in $output) {
+        $text = "$raw"
+        if ($text -notmatch "`t") { continue }
+        $parts = $text -split "`t", 4
+        if ($parts.Count -lt 4) { continue }
+        if ($parts[0] -eq "LINE") { continue }
+        $rows += [pscustomobject]@{
+            Uid    = $parts[0]
+            Name   = $parts[1]
+            Number = $parts[2]
+            Status = $parts[3]
+        }
+    }
+    return $rows
+}
+
+function Get-FreeLines {
+    return @(Get-PlowLines | Where-Object { $_.Status -eq "free" })
+}
+
+function Write-FreeNames {
+    $free = Get-FreeLines
+    if (-not $free -or $free.Count -eq 0) {
+        Write-Host "  (none)"
+        return
+    }
+    foreach ($row in $free) {
+        Write-Host "  $($row.Name)"
+    }
+}
+
+function Resolve-Line([string]$Query) {
+    $all = @(Get-PlowLines)
+    foreach ($row in $all) {
+        if ($row.Uid -eq $Query -or $row.Name -eq $Query) { return $row }
+        if ($row.Uid.ToLower() -eq $Query.ToLower() -or $row.Name.ToLower() -eq $Query.ToLower()) {
+            return $row
+        }
+    }
+    $index = 0
+    if ([int]::TryParse($Query, [ref]$index)) {
+        $free = Get-FreeLines
+        if ($index -ge 1 -and $index -le $free.Count) {
+            return $free[$index - 1]
+        }
+    }
+    return $null
+}
+
+function Invoke-MintFreeLine([string]$Query) {
+    $row = Resolve-Line $Query
+    if ($null -eq $row) {
+        Write-Error "install.ps1: unknown line '$Query'. Free lines:"
+        Write-FreeNames
+        throw "Unknown line."
+    }
+    if ($row.Status -ne "free") {
+        Write-Error "install.ps1: $($row.Name) already has an assistant assigned. Delete that agent in Plow, pick a free line, or pass -NewLine."
+        Write-Host "Free lines:"
+        Write-FreeNames
+        throw "Line is not free."
+    }
+    Write-Host "Minting free line $($row.Name)."
+    python $Cli mint $row.Uid
+}
+
+if (Test-Path -LiteralPath $Credentials -PathType Leaf) {
     Write-Host "Using existing plow-credentials. Skipping Plow login."
+} else {
+    Ensure-Cli
+
+    if ($NewLine) {
+        Invoke-PlowLogin
+    } elseif (Test-AccountToken) {
+        Write-Host "Using existing Plow account token. Skipping phone login."
+    } else {
+        Write-Host "No account token yet. Logging in without creating a new line."
+        Invoke-PlowLogin
+    }
+
+    $free = Get-FreeLines
+    if ((-not $free -or $free.Count -eq 0) -and -not $NewLine) {
+        $occupied = @(Get-PlowLines | Where-Object { $_.Status -ne "free" } | ForEach-Object { $_.Name })
+        Write-Error "install.ps1: no free Plow line on this account."
+        if ($occupied.Count -gt 0) {
+            Write-Host "Already assigned: $($occupied -join ', ')"
+        }
+        throw "Pass -NewLine to create one, or delete an assistant in Plow."
+    }
+
+    if ([string]::IsNullOrWhiteSpace($Line)) {
+        if ([Environment]::UserInteractive -and -not [Console]::IsInputRedirected) {
+            Write-Host ""
+            Write-Host "Free Plow lines (no assistant assigned):"
+            Write-FreeNames
+            Write-Host ""
+            Write-Host "Enter a line name, or 'new' to create another (SMS)."
+            $choice = Read-Host "Line"
+            if ([string]::IsNullOrWhiteSpace($choice)) { throw "A line name is required." }
+            if (@("new", "n") -contains $choice.ToLower()) {
+                $NewLine = $true
+                Invoke-PlowLogin
+                Write-Host ""
+                Write-Host "Free Plow lines:"
+                Write-FreeNames
+                $choice = Read-Host "Line"
+                if ([string]::IsNullOrWhiteSpace($choice)) { throw "A line name is required." }
+            }
+            $Line = $choice
+        } else {
+            Write-Error "install.ps1: pass -Line NAME (free names below) or -NewLine."
+            Write-FreeNames
+            throw "Line name required."
+        }
+    }
+
+    Invoke-MintFreeLine $Line
 }
 
 $Compose = Join-Path $Root "compose.yml"
