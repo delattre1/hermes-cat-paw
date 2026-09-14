@@ -4,6 +4,8 @@ export PATH
 PLOW_AGENT_TOKEN=$(cat /run/s6/container_environment/PLOW_AGENT_TOKEN 2>/dev/null || true)
 AGENT_ID=$(cat /run/s6/container_environment/AGENT_ID 2>/dev/null || true)
 HERMES_HOME=/var/lib/hermes
+PYTHON=/opt/hermes/.venv/bin/python3
+CLIENT=/opt/plow/agent-index-client.py
 export AGENT_ID HERMES_HOME
 
 if [ -z "$AGENT_ID" ]; then
@@ -11,13 +13,64 @@ if [ -z "$AGENT_ID" ]; then
   exec sleep 86400
 fi
 
+as_hermes() {
+  /command/s6-setuidgid hermes env HOME="$HERMES_HOME" HERMES_HOME="$HERMES_HOME" AGENT_ID="$AGENT_ID" "$@"
+}
+
+# /var/lib/hermes is sticky (3770 root:hermes). A ledger written by
+# `docker compose exec` (root by default) cannot be replaced by uid hermes:
+# read fails with EACCES, os.replace fails with EPERM. Repair as root
+# before every report. Also refresh the product context skill into the
+# named volume, which otherwise keeps the copy from first boot.
+prepare_home() {
+  for f in \
+    "$HERMES_HOME/.agent-index-state.json" \
+    "$HERMES_HOME/.agent-index-state.json.new" \
+    "$HERMES_HOME/.agent-index.json" \
+    "$HERMES_HOME/.agent-index.lock"
+  do
+    if [ -e "$f" ]; then
+      chown hermes:hermes "$f" || true
+    fi
+  done
+  src=/opt/hermes/skills/hermes-cat-paw-context/SKILL.md
+  dst_dir="$HERMES_HOME/skills/hermes-cat-paw-context"
+  if [ -f "$src" ]; then
+    mkdir -p "$dst_dir"
+    cp -f "$src" "$dst_dir/SKILL.md"
+    chown hermes:hermes "$dst_dir" "$dst_dir/SKILL.md" || true
+    chmod 0755 "$dst_dir" || true
+    chmod 0644 "$dst_dir/SKILL.md" || true
+  fi
+}
+
+wait_for_store() {
+  n=0
+  while [ ! -s "$HERMES_HOME/state.db" ]; do
+    n=$((n + 1))
+    if [ "$n" -gt 90 ]; then
+      echo "agent-index: Hermes state.db still missing; will retry next hour" >&2
+      return 1
+    fi
+    if [ "$n" -eq 1 ] || [ $((n % 15)) -eq 0 ]; then
+      echo "agent-index: waiting for Hermes state.db (${n}/90)" >&2
+    fi
+    sleep 2
+  done
+  return 0
+}
+
 while :; do
-  /command/s6-setuidgid hermes env HOME="$HERMES_HOME" HERMES_HOME="$HERMES_HOME" \
-    /opt/hermes/.venv/bin/python3 /opt/plow/agent-index-client.py status >/dev/null
+  prepare_home
+  if ! wait_for_store; then
+    /bin/sleep 3600
+    continue
+  fi
+  as_hermes "$PYTHON" "$CLIENT" status >/dev/null
   status=$?
   if [ "$status" -eq 3 ]; then
-    /command/s6-setuidgid hermes env HOME="$HERMES_HOME" AGENT_ID="$AGENT_ID" PLOW_AGENT_TOKEN="$PLOW_AGENT_TOKEN" \
-      /opt/hermes/.venv/bin/python3 /opt/plow/agent-index-client.py --register --agent "$AGENT_ID" \
+    as_hermes env PLOW_AGENT_TOKEN="$PLOW_AGENT_TOKEN" \
+      "$PYTHON" "$CLIENT" --register --agent "$AGENT_ID" \
       --name "Hermes Cat Paw" \
       --blurb "Human-approved computer control for Windows, Linux, and Omarchy through Plow Latch." \
       --runtime "Plow Hermes" \
@@ -32,8 +85,7 @@ while :; do
     /bin/sleep 3600
     continue
   fi
-  /command/s6-setuidgid hermes env HOME="$HERMES_HOME" HERMES_HOME="$HERMES_HOME" AGENT_ID="$AGENT_ID" \
-    /opt/hermes/.venv/bin/python3 /opt/plow/agent-index-client.py \
+  as_hermes "$PYTHON" "$CLIENT" \
     || echo "agent-index: reporter exited non-zero" >&2
   /bin/sleep 3600
 done

@@ -46,10 +46,12 @@ Safety rules:
    assume PowerShell can run Unix shell commands.
 6. Ask me before a persistent launcher/service change, a new Plow line, or any
    action that could replace existing Hermes state. Explain the exact change.
-7. Keep Latch running and visible. For the first device check, use only a
-   read-only capability check. Never bypass an approval, denial, timeout, MFA,
-   disconnect, or host block. On Linux/Omarchy, Latch from-source state lives
-   in ~/.config/Plow-Latch-<branch>, not ~/Library/Application Support.
+7. Keep Latch running and visible. After `scripts/setup-latch.sh`, run
+   `scripts/start-latch.sh` if the app is not already open. For the first
+   device check, use only a read-only capability check. Never bypass an
+   approval, denial, timeout, MFA, disconnect, or host block. On
+   Linux/Omarchy, Latch from-source state lives in ~/.config/Plow-Latch-<branch>,
+   not ~/Library/Application Support.
 8. During `plow-agents login`, read the installer output. When it prints a
    destination number and an activation message, immediately return both to me
    in chat. Use this format:
@@ -71,6 +73,14 @@ Safety rules:
    the same installer process start Compose. Confirm the container env is
    AGENT_ID=hermes-cat-paw. Keep troubleshooting until it is. Do not stop
    after explaining a command for me to run manually.
+10. The installer ends with `scripts/verify.sh` (Windows: `verify.ps1`). That
+    is the success check: Index client as uid hermes, ledger writable, usage
+    report attempted. Do not `docker compose exec` the Index client as root.
+    `/var/lib/hermes` is sticky; a root-owned `.agent-index-state.json` makes
+    the hourly reporter fail with PermissionError and ranking stays at zero.
+    If you must exec by hand, use `-u hermes` and HOME=/var/lib/hermes. Prefer
+    re-running `scripts/verify.sh`. Do not claim the install works until
+    verify exits 0.
 
 Clean installation:
 1. Install the prerequisites for this OS: Node.js 22+, Git, Python 3, just,
@@ -79,24 +89,27 @@ Clean installation:
    and `fuse2` (`sudo pacman -S --needed base-devel just git python bubblewrap fuse2`).
 2. Clone https://github.com/kumanaya/hermes-cat-paw.git. From that checkout
    run `scripts/setup-latch.sh` on Linux/Omarchy (or `scripts/setup-latch.ps1`
-   on Windows). That clones Cat Paw Latch next to this repo if needed and
-   runs `just install`, which downloads Electron when npm skipped the binary.
-   Then run `just app` from the Latch checkout in a visible terminal. On
-   Omarchy, if a packaged AppImage exists, run `just install-desktop` in the
-   Latch checkout so Plow Latch appears in the Apps tab. Sign in and leave
-   it running. Do not stop after printing the clone commands.
+   on Windows). That clones Cat Paw Latch next to this repo if needed, runs
+   `just install` (which downloads Electron when npm skipped the binary), and
+   launches Latch when a display is available (`scripts/start-latch.sh`). If
+   Latch did not open, run `scripts/start-latch.sh` or `just app` from the
+   Latch checkout in a visible terminal. On Omarchy, if a packaged AppImage
+   exists, `setup-latch` also runs `just install-desktop` so Plow Latch appears
+   in the Apps tab. Sign in and leave it running. Do not stop after printing
+   the clone commands.
 3. Run `scripts/install.sh` on Linux/Omarchy or `scripts/install.ps1` on
-   Windows and let it finish. Optional `--line NAME` selects a free line;
-   otherwise the first free name is minted. Do not mint or start Compose by
-   hand. If an account token already exists it skips phone login; if
-   `plow-credentials` already exists it skips mint. Compose always starts with
-   AGENT_ID=hermes-cat-paw; do not override it from the host environment. It
-   does not create a new line unless `--new-line` / `-NewLine` is passed after
-   I confirm. During phone login, relay the exact activation message and
-   destination number printed by the installer; do not make the user search
-   the terminal.
+   Windows and let it finish, including its verify step. Optional `--line NAME`
+   selects a free line; otherwise the first free name is minted. Do not mint
+   or start Compose by hand. If an account token already exists it skips phone
+   login; if `plow-credentials` already exists it skips mint. Compose always
+   starts with AGENT_ID=hermes-cat-paw; do not override it from the host
+   environment. It does not create a new line unless `--new-line` / `-NewLine`
+   is passed after I confirm. During phone login, relay the exact activation
+   message and destination number printed by the installer; do not make the
+   user search the terminal.
 4. Keep the named volume `hermes-cat-paw-home`; never use `docker compose down
-   -v` during a normal update.
+   -v` during a normal update. Re-run `scripts/verify.sh` after any compose
+   restart.
 
 Existing Hermes installation:
 1. Install the official Plow Chat plugin for the detected Hermes version only
@@ -145,11 +158,15 @@ token.
 
 Use the official Agent Index client. Run the reporter as the same OS user that
 runs Hermes, under the same supervisor or startup mechanism, and make it report
-hourly. Do not invent usage or create a second installation identity.
+hourly. Do not invent usage or create a second installation identity. If this
+machine uses the Compose install, run `scripts/verify.sh` instead of exec'ing
+the client as root.
 
 Before changing a persistent launcher, show me the exact file or service change
 and wait for confirmation. After the change, verify with:
 
+  scripts/verify.sh
+  # or, on an existing non-Compose Hermes:
   agent_index_client.py status
   agent_index_client.py --self-check
   agent_index_client.py --agent hermes-cat-paw --dry-run
@@ -196,8 +213,7 @@ cannot run):
 git clone https://github.com/kumanaya/hermes-cat-paw.git
 cd hermes-cat-paw
 ./scripts/setup-latch.sh
-cd ../cat-paw-latch
-just app
+./scripts/start-latch.sh   # no-op if Latch is already open
 ```
 
 On Windows PowerShell, run `.\scripts\setup-latch.ps1` instead of the `.sh`.
@@ -238,7 +254,8 @@ The installer is idempotent. If `plow-credentials` already exists, it skips
 login and mint. If `~/.config/plow/token` already exists, it skips phone login
 and mints the first free line by name. Pass `--new-line` only to create another
 assistant line. The credential file remains private: never commit, print, or
-paste it.
+paste it. The installer finishes with `scripts/verify.sh`, which reports as
+uid hermes.
 
 ### Already have Hermes?
 
@@ -306,7 +323,7 @@ a stop signal — never bypass it or blindly retry an externally visible action.
 
 ### Troubleshooting
 
-- Latch does not open: check Node.js 22+, native build tools, `just`, and `bwrap` on Linux. Run `just install` in the Latch checkout so Electron is actually downloaded, then `just app`. From-source Linux home is `~/.config/Plow-Latch-<branch>`, not `~/Library/Application Support`.
+- Latch does not open: check Node.js 22+, native build tools, `just`, and `bwrap` on Linux. Run `just install` in the Latch checkout so Electron is actually downloaded, then `scripts/start-latch.sh` or `just app`. From-source Linux home is `~/.config/Plow-Latch-<branch>`, not `~/Library/Application Support`.
 - Docker does not start: start Docker Desktop or the Docker Engine and retry `docker compose up --build -d`.
 - No agent response: inspect `docker compose logs hermes-cat-paw` and verify the credential.
-- No ranking usage: check `AGENT_ID`, reporter logs, `--self-check`, and the persistent volume.
+- No ranking usage / `PermissionError` on `.agent-index-state.json`: `/var/lib/hermes` is sticky. `docker compose exec` as root leaves a 0600 ledger the reporter cannot replace. Run `./scripts/verify.sh` (it chowns the ledger and execs as `hermes`). Do not delete the `hermes-cat-paw-home` volume.

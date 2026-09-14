@@ -32,9 +32,14 @@ try {
 }
 
 Write-Host "Cat Paw Latch is ready at $LatchDir"
-Write-Host ""
-Write-Host "Start it in a visible terminal and leave it running:"
-Write-Host "  cd $LatchDir"
-Write-Host "  just app"
+$starter = Join-Path $PSScriptRoot "start-latch.ps1"
+try {
+    & $starter
+} catch {
+    Write-Host "Could not auto-launch Latch. In a visible terminal:"
+    Write-Host "  cd $LatchDir"
+    Write-Host "  just app"
+}
+
 Write-Host ""
 Write-Host "Sign in, keep the approval window visible, then continue Hermes setup with scripts/install.ps1. That installer mints a free line (or -Line NAME) and always starts Compose as AGENT_ID=hermes-cat-paw."
