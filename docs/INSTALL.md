@@ -74,6 +74,53 @@ Existing Hermes installation:
    sending private data. Do not claim success until the reporter is actually
    configured.
 
+Prompt for an existing Hermes installation:
+
+```text
+Integrate Hermes Cat Paw into my existing Hermes installation.
+
+First inspect, without changing anything:
+- the Hermes version and how it is launched (Docker Compose, systemd, another
+  supervisor, or a terminal command);
+- the active HERMES_HOME and the state.db inside it;
+- whether the official Plow Chat plugin is already installed;
+- where this installation stores credentials and whether PLOW_AGENT_TOKEN is
+  already supplied by its launcher.
+
+Preserve my existing HERMES_HOME, SOUL/persona, sessions, skills, provider
+settings, configuration, and credentials. Do not create a second Hermes home,
+reset a volume, replace config.yaml, or print any secret.
+
+If the Plow Chat plugin is missing, install the official plugin compatible with
+this Hermes version and show me what will change before applying it.
+
+Configure the existing Hermes process and its Agent Index reporter with:
+
+  AGENT_ID=hermes-cat-paw
+  HERMES_HOME=<the existing Hermes home containing state.db>
+
+AGENT_ID is the public Agent Index identity. It must be present in the same
+environment used by the reporter; setting it in an unrelated terminal is not
+enough. The reporter also needs the existing PLOW_AGENT_TOKEN, supplied by the
+credential manager or launcher. Never print, copy, or ask me to paste that
+token.
+
+Use the official Agent Index client. Run the reporter as the same OS user that
+runs Hermes, under the same supervisor or startup mechanism, and make it report
+hourly. Do not invent usage or create a second installation identity.
+
+Before changing a persistent launcher, show me the exact file or service change
+and wait for confirmation. After the change, verify with:
+
+  agent_index_client.py status
+  agent_index_client.py --self-check
+  agent_index_client.py --agent hermes-cat-paw --dry-run
+
+Finally, perform only a read-only Latch capability check and stop for my
+approval before any device action. Report exactly what was changed and what
+remains unconfigured.
+```
+
 Verification:
 - Ask Hermes to check whether Latch is connected and list only the capabilities
   it advertises.
@@ -135,21 +182,56 @@ python ../plow-agents/bin/plow-agents mint <line-uid>
 
 ### Already have Hermes?
 
+Use the prompt above if an agent is doing the setup. The important distinction
+is that `AGENT_ID` belongs to the Agent Index reporter, not to the Latch app and
+not to the public Git repository by itself.
+
 Keep the existing Hermes home, persona, sessions, skills, provider settings, and
 credentials. Install the official Plow Chat plugin for that Hermes version, then
-configure the same launcher with:
+configure the same launcher and reporter with:
 
 ```text
 AGENT_ID=hermes-cat-paw
 HERMES_HOME=<the existing Hermes home containing state.db>
 ```
 
-The `AGENT_ID` variable alone does not report usage. Install the official Agent
-Index client and run its reporter under the same supervisor that starts Hermes,
-as the Hermes user, with the existing `PLOW_AGENT_TOKEN` supplied by the
-credential manager or launcher. Never print or copy the token. Before changing a
-persistent launcher, show the owner the proposed change and confirm that it
-preserves the existing Hermes configuration.
+`AGENT_ID` must be present in the process that starts the reporter. For example:
+
+**Existing Docker Compose:**
+
+```yaml
+services:
+  hermes:
+    environment:
+      AGENT_ID: hermes-cat-paw
+      HERMES_HOME: /var/lib/hermes
+```
+
+**Existing systemd user service:**
+
+```ini
+[Service]
+Environment=AGENT_ID=hermes-cat-paw
+Environment=HERMES_HOME=/home/USER/.hermes
+```
+
+Use the actual service name and existing Hermes home. Do not copy the
+`PLOW_AGENT_TOKEN` into this file if the service already receives it from a
+credential manager or protected environment file.
+
+**Manual terminal launch:**
+
+```sh
+export AGENT_ID=hermes-cat-paw
+export HERMES_HOME=/path/to/the/existing/hermes-home
+```
+
+This last option is only effective while the reporter is launched from that
+same shell. The `AGENT_ID` variable alone does not report usage: install the
+official Agent Index client and run its reporter hourly, as the Hermes user,
+with the existing `PLOW_AGENT_TOKEN` supplied securely. Never print or copy the
+token. Before changing a persistent launcher, show the owner the proposed
+change and confirm that it preserves the existing Hermes configuration.
 
 ### 3. Verify a safe first run
 
