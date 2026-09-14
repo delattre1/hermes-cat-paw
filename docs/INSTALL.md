@@ -48,7 +48,8 @@ Safety rules:
    action that could replace existing Hermes state. Explain the exact change.
 7. Keep Latch running and visible. For the first device check, use only a
    read-only capability check. Never bypass an approval, denial, timeout, MFA,
-   disconnect, or host block.
+   disconnect, or host block. On Linux/Omarchy, Latch from-source state lives
+   in ~/.config/Plow-Latch-<branch>, not ~/Library/Application Support.
 8. During `plow-agents login`, read the installer output. When it prints a
    destination number and an activation message, immediately return both to me
    in chat. Use this format:
@@ -68,17 +69,21 @@ Safety rules:
 Clean installation:
 1. Install the prerequisites for this OS: Node.js 22+, Git, Python 3, just,
    Docker with Compose, and the platform-native build dependencies described
-   in this guide.
-2. Clone https://github.com/kumanaya/cat-paw-latch.git, run `just install`,
-   and run `just app`. Sign in to Latch and leave it running.
-3. Clone https://github.com/kumanaya/hermes-cat-paw.git.
-4. Run `scripts/install.sh` on Linux/Omarchy or `scripts/install.ps1` on
+   in this guide. On Arch/Omarchy also install `base-devel`, `bubblewrap`,
+   and `fuse2` (`sudo pacman -S --needed base-devel just git python bubblewrap fuse2`).
+2. Clone https://github.com/kumanaya/hermes-cat-paw.git. From that checkout
+   run `scripts/setup-latch.sh` on Linux/Omarchy (or `scripts/setup-latch.ps1`
+   on Windows). That clones Cat Paw Latch next to this repo if needed and
+   runs `just install`, which downloads Electron when npm skipped the binary.
+   Then run `just app` from the Latch checkout in a visible terminal. Sign in
+   and leave it running. Do not stop after printing the clone commands.
+3. Run `scripts/install.sh` on Linux/Omarchy or `scripts/install.ps1` on
    Windows. The installer downloads `plow-agents`, starts the phone login,
    lists available lines, asks only for the selected line UID, mints the private
    credential, and starts Docker Compose. During phone login, relay the exact
    activation message and destination number printed by the installer; do not
    make the user search the terminal.
-5. Keep the named volume `hermes-cat-paw-home`; never use `docker compose down
+4. Keep the named volume `hermes-cat-paw-home`; never use `docker compose down
    -v` during a normal update.
 
 Existing Hermes installation:
@@ -165,14 +170,28 @@ Install these prerequisites first:
 - **Windows:** Docker Desktop with the WSL2 engine, Visual Studio Build Tools
   with the Desktop C++ workload, and Git Bash or WSL2 for shell commands.
 - **Linux/Omarchy:** Docker Engine with the Compose plugin, a C++ toolchain,
-  `bubblewrap`, and Secret Service support.
+  `bubblewrap`, Secret Service support, and `fuse2` if you will run an AppImage.
+  On Arch/Omarchy:
+
+  ```sh
+  sudo pacman -S --needed base-devel just git python bubblewrap fuse2 docker
+  ```
+
+From this repository (do not assemble the Latch clone by hand unless setup-latch
+cannot run):
 
 ```sh
-git clone https://github.com/kumanaya/cat-paw-latch.git
-cd cat-paw-latch
-just install
+git clone https://github.com/kumanaya/hermes-cat-paw.git
+cd hermes-cat-paw
+./scripts/setup-latch.sh
+cd ../cat-paw-latch
 just app
 ```
+
+On Windows PowerShell, run `.\scripts\setup-latch.ps1` instead of the `.sh`.
+`just install` (run by setup-latch) downloads the Electron binary if npm skipped
+it — that skip is why a bare `npm install` can leave `just app` with no desktop
+binary. From-source Linux state is `~/.config/Plow-Latch-<branch>`.
 
 Sign in inside Latch and leave it running so approval prompts remain visible.
 
@@ -261,7 +280,7 @@ a stop signal — never bypass it or blindly retry an externally visible action.
 
 ### Troubleshooting
 
-- Latch does not open: check Node.js, native build tools, `just`, and the shell environment.
+- Latch does not open: check Node.js 22+, native build tools, `just`, and `bwrap` on Linux. Run `just install` in the Latch checkout so Electron is actually downloaded, then `just app`. From-source Linux home is `~/.config/Plow-Latch-<branch>`, not `~/Library/Application Support`.
 - Docker does not start: start Docker Desktop or the Docker Engine and retry `docker compose up --build -d`.
 - No agent response: inspect `docker compose logs hermes-cat-paw` and verify the credential.
 - No ranking usage: check `AGENT_ID`, reporter logs, `--self-check`, and the persistent volume.
