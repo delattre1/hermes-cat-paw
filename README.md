@@ -121,11 +121,21 @@ skills/
 
 ## Start in a few minutes.
 
-The public ranking is the **Agent Index**, not GitHub. Hermes Cat Paw registers
-the identity `hermes-cat-paw` and reports aggregate model-token usage from each
-persistent installation hourly. The reporter sends no prompts, task text, paths,
-or secrets. Keep the Compose volume named `hermes-cat-paw-home`; deleting it
-creates a new installation identity and splits the usage history.
+The public ranking is the **Agent Index**, not GitHub. Clone **main**, not a
+feature branch:
+
+```sh
+git clone https://github.com/kumanaya/hermes-cat-paw.git
+cd hermes-cat-paw
+./scripts/setup-latch.sh
+./scripts/install.sh
+```
+
+`install.sh` always boots `AGENT_ID=hermes-cat-paw`. Other people's installs
+join that page and report their token usage onto it. The reporter sends no
+prompts, task text, paths, or secrets. Keep the Compose volume named
+`hermes-cat-paw-home`; deleting it creates a new installation identity and
+splits the usage history.
 
 After a real conversation, verify the reporter with:
 
