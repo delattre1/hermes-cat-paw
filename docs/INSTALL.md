@@ -327,3 +327,4 @@ a stop signal — never bypass it or blindly retry an externally visible action.
 - Docker does not start: start Docker Desktop or the Docker Engine and retry `docker compose up --build -d`.
 - No agent response: inspect `docker compose logs hermes-cat-paw` and verify the credential.
 - No ranking usage / `PermissionError` on `.agent-index-state.json`: `/var/lib/hermes` is sticky. `docker compose exec` as root leaves a 0600 ledger the reporter cannot replace. Run `./scripts/verify.sh` (it chowns the ledger and execs as `hermes`). Do not delete the `hermes-cat-paw-home` volume.
+- Agent does not reply, or logs show `websocket error: TypeError` / `grant read failed`: clone **main** (not an old branch). The image patches the fleet Plow Chat setup turn. Rebuild with `docker compose up --build -d`, then text the Plow line. Ranking only moves after a real conversation writes tokens.

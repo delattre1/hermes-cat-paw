@@ -26,3 +26,10 @@ RUN find /opt/hermes/skills -type d -exec chmod 0755 {} + \
 
 COPY image/s6-overlay/ /etc/s6-overlay/
 RUN chmod 0755 /etc/s6-overlay/s6-rc.d/agent-index/run
+
+# The fleet pin's `_prime` omits `_channel_prompt`'s `authority` argument.
+# That TypeError kills the websocket on first install; reconnects then log
+# `grant read failed: ClientResponseError`. Patch in place so we keep the
+# audited base and only the two known failure paths change.
+COPY image/plow_chat/patch_plugin.py /tmp/patch_plow_chat.py
+RUN python3 /tmp/patch_plow_chat.py && rm /tmp/patch_plow_chat.py
