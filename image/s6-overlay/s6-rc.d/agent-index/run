@@ -75,7 +75,8 @@ while :; do
       --blurb "Human-approved computer control for Windows, Linux, and Omarchy through Plow Latch." \
       --runtime "Plow Hermes" \
       --repo "https://github.com/kumanaya/hermes-cat-paw" \
-      --install-url "https://github.com/kumanaya/hermes-cat-paw/blob/main/docs/INSTALL.md" >/dev/null || {
+      --install-url "https://github.com/kumanaya/hermes-cat-paw/blob/main/docs/INSTALL.md" \
+      --image "https://raw.githubusercontent.com/kumanaya/hermes-cat-paw/main/hackathon-banner.png" >/dev/null || {
         echo "agent-index: registration failed; not reporting this hour" >&2
         /bin/sleep 3600
         continue
