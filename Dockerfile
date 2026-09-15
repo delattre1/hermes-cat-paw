@@ -1,6 +1,8 @@
 # Lightweight Plow Chat configuration over the official Hermes base image.
+# Pin is plow-pbc/plow-hermes-agent@8088c7f7 (plugin hermes-plugin-plow@c6987ab,
+# which includes the setup-turn authority fix #144).
 # Ref: https://github.com/plow-pbc/plow-hermes-agent
-FROM public.ecr.aws/e1h7x4a2/plow-cloud-agents:base-8710797b6409c77df560c6198407765d138ea617
+FROM public.ecr.aws/e1h7x4a2/plow-cloud-agents:base-8088c7f77f5ffd536a80c9dc302ebdb39e6be1d2
 
 COPY vendor/client.pin /opt/plow/agent-index-client.pin
 RUN set -eu; \
@@ -26,10 +28,3 @@ RUN find /opt/hermes/skills -type d -exec chmod 0755 {} + \
 
 COPY image/s6-overlay/ /etc/s6-overlay/
 RUN chmod 0755 /etc/s6-overlay/s6-rc.d/agent-index/run
-
-# The fleet pin's `_prime` omits `_channel_prompt`'s `authority` argument.
-# That TypeError kills the websocket on first install; reconnects then log
-# `grant read failed: ClientResponseError`. Patch in place so we keep the
-# audited base and only the two known failure paths change.
-COPY image/plow_chat/patch_plugin.py /tmp/patch_plow_chat.py
-RUN python3 /tmp/patch_plow_chat.py && rm /tmp/patch_plow_chat.py
