@@ -169,6 +169,12 @@ launch it on the computer you want Hermes to control:
 ./scripts/start-latch.sh   # if Latch is not already open
 ```
 
+Debian/Ubuntu needs a compiler and libsecret before Latch will `npm install`:
+
+```sh
+sudo apt install build-essential pkg-config libsecret-1-dev just git python3 bubblewrap fuse2
+```
+
 On Omarchy, a packaged AppImage also lands in the Apps tab:
 
 ```sh

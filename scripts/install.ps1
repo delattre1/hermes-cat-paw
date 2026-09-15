@@ -130,19 +130,28 @@ if (Test-Path -LiteralPath $Credentials -PathType Leaf) {
     }
 
     $free = Get-FreeLines
+    $all = @(Get-PlowLines)
     if ((-not $free -or $free.Count -eq 0) -and -not $NewLine) {
-        $occupied = @(Get-PlowLines | Where-Object { $_.Status -ne "free" } | ForEach-Object { $_.Name })
-        Write-Error "install.ps1: no free Plow line on this account."
-        if ($occupied.Count -gt 0) {
-            Write-Host "Already assigned: $($occupied -join ', ')"
+        if ($all.Count -eq 0) {
+            Write-Host "This Plow account has no assistant line yet (normal on a first install)."
+            Write-Host "Creating the first line — required so the agent can have a phone number."
+            Write-Host "Another SMS will print. Relay it the same way and wait for: feito"
+            $NewLine = $true
+            Invoke-PlowLogin
+            $free = Get-FreeLines
+        } else {
+            $occupied = @($all | Where-Object { $_.Status -ne "free" } | ForEach-Object { $_.Name })
+            if ($occupied.Count -gt 0) {
+                Write-Host "Already assigned: $($occupied -join ', ')"
+            }
+            throw "install.ps1: every line on this account already has an assistant. Do not create another unless the owner asked. Then: .\scripts\install.ps1 -NewLine"
         }
-        throw "Pass -NewLine to create one, or delete an assistant in Plow."
     }
 
     if ([string]::IsNullOrWhiteSpace($Line)) {
         $picked = @(Get-FreeLines | Sort-Object Name | Select-Object -First 1)
         if (-not $picked -or $picked.Count -eq 0) {
-            throw "install.ps1: no free Plow line to mint after login. Pass -NewLine to create one, or delete an assistant in Plow."
+            throw "install.ps1: still no free Plow line after login. Ask the owner, then re-run with -NewLine, or free a line in Plow."
         }
         $Line = $picked[0].Name
         Write-Host "Free Plow lines (no assistant assigned):"

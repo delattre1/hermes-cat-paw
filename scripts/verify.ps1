@@ -54,12 +54,40 @@ function Invoke-HermesClient {
         $Service $Python $Client @args
 }
 
+function Register-Page {
+    $token = docker compose -f $ComposeFile exec -T -u 0 $Service sh -c 'cat /run/s6/container_environment/PLOW_AGENT_TOKEN'
+    docker compose -f $ComposeFile exec -T -u hermes `
+        -e HOME=/var/lib/hermes `
+        -e HERMES_HOME=/var/lib/hermes `
+        -e AGENT_ID=hermes-cat-paw `
+        -e PLOW_AGENT_TOKEN="$token" `
+        $Service $Python $Client `
+        --register --agent hermes-cat-paw `
+        --name "Hermes Cat Paw" `
+        --blurb "Human-approved computer control for Windows, Linux, and Omarchy through Plow Latch." `
+        --runtime "Hermes / Plow Latch" `
+        --repo "https://github.com/kumanaya/hermes-cat-paw" `
+        --install-url "https://github.com/kumanaya/hermes-cat-paw/blob/main/docs/INSTALL.md" `
+        --image "https://raw.githubusercontent.com/kumanaya/hermes-cat-paw/main/hackathon-banner.png" `
+        --image "https://raw.githubusercontent.com/kumanaya/hermes-cat-paw/main/real-usage.png"
+}
+
 Write-Host "verify: Index client as uid hermes (never root)"
+Write-Host "verify: --self-check uses throwaway /tmp dirs; 'unreadable' there is expected."
+Write-Host "verify: 'agentsview not installed' is optional in this image. Hermes state.db is what counts."
 Invoke-HermesClient --self-check
 if ($LASTEXITCODE -ne 0) { throw "verify: --self-check failed" }
 Invoke-HermesClient status
 $status = $LASTEXITCODE
 Write-Host "verify: status exit $status (0=registered, 3=unregistered)"
+if ($status -eq 3) {
+    Write-Host "verify: not registered yet — registering now (do not wait for the hourly loop)"
+    Register-Page
+    if ($LASTEXITCODE -eq 0) {
+        Invoke-HermesClient status
+        $status = $LASTEXITCODE
+    }
+}
 if ($status -ne 0 -and $status -ne 3) { throw "verify: Index status failed ($status)" }
 Invoke-HermesClient --agent hermes-cat-paw --dry-run
 if ($LASTEXITCODE -ne 0) { throw "verify: --dry-run failed" }
@@ -68,4 +96,10 @@ Write-Host "verify: reporting current usage as hermes"
 Invoke-HermesClient --agent hermes-cat-paw
 if ($LASTEXITCODE -ne 0) { throw "verify: live report failed. Check docker compose logs hermes-cat-paw" }
 
-Write-Host "verify: OK. Do not docker compose exec the Index client as root; use this script or -u hermes."
+if ($status -eq 0) {
+    Write-Host "verify: container OK, usage heartbeat signed in."
+    Write-Host "verify: days=0 / tokens=0 is normal before a real Hermes chat."
+} else {
+    Write-Host "verify: container OK, usage heartbeat not signed in yet. It retries on its own. This is not a failed install."
+}
+Write-Host "verify: do not docker compose exec the Index client as root; use this script or -u hermes."

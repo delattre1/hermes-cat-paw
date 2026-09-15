@@ -26,11 +26,13 @@ Usage: $(basename "$0") [--line NAME] [--new-line]
 With no flags, the installer is non-interactive after phone login:
   - skip login when ~/.config/plow/token exists
   - skip mint when plow-credentials exists
+  - if the account has no lines yet, create the first one (required)
   - otherwise mint the first free line (no assistant assigned), by name
   - start Docker Compose with AGENT_ID=hermes-cat-paw
 
-Occupied lines are never minted. Pass --line only to override the automatic
-choice. Do not call plow-agents mint or docker compose by hand.
+Do not create a second line unless --new-line was passed. If every existing
+line is occupied, stop and ask — do not invent another number.
+Do not call plow-agents mint or docker compose by hand.
 EOF
 }
 
@@ -169,10 +171,39 @@ mint_free_line() {
 login_account() {
   if (( NEW_LINE )); then
     echo "Provisioning a new assistant line (phone SMS)."
+    echo "Keep this script in the foreground. Relay Plow Activate and the"
+    echo "destination number, then wait for the owner to reply: feito"
     plow login --new-line
   else
     plow login
   fi
+}
+
+# New Plow accounts have zero lines. The first line is required to install.
+# Extra lines are not — those need an explicit --new-line after the owner agrees.
+ensure_first_line() {
+  local free_count line_count
+  free_count="$(lines_tsv | awk -F '\t' '$4 == "free" { n++ } END { print n+0 }')"
+  line_count="$(lines_tsv | awk 'END { print NR+0 }')"
+  if (( free_count > 0 )); then
+    return 0
+  fi
+  if (( line_count == 0 )); then
+    echo "This Plow account has no assistant line yet (normal on a first install)."
+    echo "Creating the first line — required so the agent can have a phone number."
+    echo "Another SMS will print. Relay it the same way and wait for: feito"
+    NEW_LINE=1
+    login_account
+    return 0
+  fi
+  occupied="$(occupied_names)"
+  echo "install.sh: every line on this account already has an assistant." >&2
+  if [[ -n "$occupied" ]]; then
+    echo "Already assigned: $occupied" >&2
+  fi
+  echo "Do not create another line unless the owner asked. Then: $0 --new-line" >&2
+  echo "Or free a line in Plow and re-run without --new-line." >&2
+  exit 1
 }
 
 # Docker creates a directory when this bind-mount path is missing. Mint then
@@ -204,22 +235,15 @@ else
     login_account
   fi
 
-  free_count="$(lines_tsv | awk -F '\t' '$4 == "free" { n++ } END { print n+0 }')"
-  if (( free_count == 0 )) && (( ! NEW_LINE )); then
-    occupied="$(occupied_names)"
-    echo "install.sh: no free Plow line on this account." >&2
-    if [[ -n "$occupied" ]]; then
-      echo "Already assigned: $occupied" >&2
-    fi
-    echo "Pass --new-line to create one, or delete an assistant in Plow." >&2
-    exit 1
+  if (( ! NEW_LINE )); then
+    ensure_first_line
   fi
 
   if [[ -z "$LINE" ]]; then
     LINE="$(first_free_name)"
     if [[ -z "$LINE" ]]; then
-      echo "install.sh: no free Plow line to mint after login." >&2
-      echo "Pass --new-line to create one, or delete an assistant in Plow." >&2
+      echo "install.sh: still no free Plow line after login." >&2
+      echo "Ask the owner, then re-run with --new-line, or free a line in Plow." >&2
       exit 1
     fi
     echo "Free Plow lines (no assistant assigned):"

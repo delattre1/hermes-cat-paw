@@ -57,11 +57,39 @@ exec_hermes() {
     "$SERVICE" "$PYTHON" "$CLIENT" "$@"
 }
 
+register_page() {
+  local token
+  token="$("${COMPOSE[@]}" exec -T -u 0 "$SERVICE" sh -c 'cat /run/s6/container_environment/PLOW_AGENT_TOKEN')"
+  "${COMPOSE[@]}" exec -T -u hermes \
+    -e HOME=/var/lib/hermes \
+    -e HERMES_HOME=/var/lib/hermes \
+    -e AGENT_ID=hermes-cat-paw \
+    -e PLOW_AGENT_TOKEN="$token" \
+    "$SERVICE" "$PYTHON" "$CLIENT" \
+    --register --agent hermes-cat-paw \
+    --name "Hermes Cat Paw" \
+    --blurb "Human-approved computer control for Windows, Linux, and Omarchy through Plow Latch." \
+    --runtime "Hermes / Plow Latch" \
+    --repo "https://github.com/kumanaya/hermes-cat-paw" \
+    --install-url "https://github.com/kumanaya/hermes-cat-paw/blob/main/docs/INSTALL.md" \
+    --image "https://raw.githubusercontent.com/kumanaya/hermes-cat-paw/main/hackathon-banner.png" \
+    --image "https://raw.githubusercontent.com/kumanaya/hermes-cat-paw/main/real-usage.png"
+}
+
 echo "verify: Index client as uid hermes (never root)"
+echo "verify: --self-check uses throwaway /tmp dirs; 'unreadable' there is expected."
+echo "verify: 'agentsview not installed' is optional in this image. Hermes state.db is what counts."
 exec_hermes --self-check
 status=0
 exec_hermes status || status=$?
 echo "verify: status exit $status (0=registered, 3=unregistered)"
+if [ "$status" -eq 3 ]; then
+  echo "verify: not registered yet — registering now (do not wait for the hourly loop)"
+  if register_page; then
+    status=0
+    exec_hermes status || status=$?
+  fi
+fi
 if [ "$status" -ne 0 ] && [ "$status" -ne 3 ]; then
   echo "verify: Index status failed ($status)" >&2
   exit 1
@@ -100,4 +128,10 @@ if [ "$chat_state" != "connected" ]; then
   echo "verify: Plow Chat is not connected yet. Text the line after it comes online." >&2
 fi
 
-echo "verify: OK. Do not docker compose exec the Index client as root; use this script or -u hermes."
+if [ "$status" -eq 0 ]; then
+  echo "verify: container OK, usage heartbeat signed in."
+  echo "verify: days=0 / tokens=0 is normal before a real Hermes chat."
+else
+  echo "verify: container OK, usage heartbeat not signed in yet. It retries on its own. This is not a failed install."
+fi
+echo "verify: do not docker compose exec the Index client as root; use this script or -u hermes."
