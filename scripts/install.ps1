@@ -106,6 +106,14 @@ function Invoke-MintFreeLine([string]$Query) {
     python $Cli mint $row.Uid
 }
 
+if (Test-Path -LiteralPath $Credentials -PathType Container) {
+    if (Get-ChildItem -Force -LiteralPath $Credentials) {
+        throw "install.ps1: plow-credentials is a non-empty directory. That usually means docker compose ran before mint. Move it aside and re-run."
+    }
+    Write-Host "install.ps1: removing empty plow-credentials directory left by docker compose."
+    Remove-Item -LiteralPath $Credentials
+}
+
 if (Test-Path -LiteralPath $Credentials -PathType Leaf) {
     Write-Host "Using existing plow-credentials. Skipping Plow login."
 } else {
@@ -117,6 +125,7 @@ if (Test-Path -LiteralPath $Credentials -PathType Leaf) {
         Write-Host "Using existing Plow account token. Skipping phone login."
     } else {
         Write-Host "No account token yet. Logging in without creating a new line."
+        Write-Host "Keep this script in the foreground. When it prints a destination number and Plow Activate: <code>, show those two lines to the owner and wait for them to reply: feito"
         Invoke-PlowLogin
     }
 
@@ -142,6 +151,10 @@ if (Test-Path -LiteralPath $Credentials -PathType Leaf) {
     }
 
     Invoke-MintFreeLine $Line
+}
+
+if (-not (Test-Path -LiteralPath $Credentials -PathType Leaf)) {
+    throw "install.ps1: plow-credentials is still missing after mint. Do not run docker compose up until this file exists. Re-run this script."
 }
 
 $Compose = Join-Path $Root "compose.yml"

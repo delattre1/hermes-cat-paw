@@ -10,7 +10,9 @@ services:
       # interpolate a host AGENT_ID, or usage reports as a different agent.
       AGENT_ID: hermes-cat-paw
     volumes:
-      # Created by `plow-agents mint`; never commit this file.
+      # File created by `scripts/install.sh` (`plow-agents mint`). Never commit
+      # it. Do not `docker compose up` before that file exists: Compose would
+      # create an empty directory here and the container would have no token.
       - ./plow-credentials:/var/lib/plow/credentials.host:ro
       # Agent home (sessions, setup). `down -v` starts from scratch.
       - hermes-cat-paw-home:/var/lib/hermes

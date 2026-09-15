@@ -175,6 +175,18 @@ login_account() {
   fi
 }
 
+# Docker creates a directory when this bind-mount path is missing. Mint then
+# cannot write the file, and the container sees no credential.
+if [[ -d "$CREDENTIALS" ]]; then
+  if [[ -n "$(find "$CREDENTIALS" -mindepth 1 -maxdepth 1 -print -quit)" ]]; then
+    echo "install.sh: plow-credentials is a non-empty directory." >&2
+    echo "That usually means docker compose ran before mint. Move it aside and re-run." >&2
+    exit 1
+  fi
+  echo "install.sh: removing empty plow-credentials directory left by docker compose."
+  rmdir "$CREDENTIALS"
+fi
+
 if [[ -f "$CREDENTIALS" ]]; then
   echo "Using existing plow-credentials. Skipping Plow login."
 else
@@ -186,6 +198,9 @@ else
     echo "Using existing Plow account token. Skipping phone login."
   else
     echo "No account token yet. Logging in without creating a new line."
+    echo "Keep this script in the foreground. When it prints a destination"
+    echo "number and Plow Activate: <code>, show those two lines to the owner"
+    echo "and wait for them to reply: feito"
     login_account
   fi
 
@@ -213,6 +228,12 @@ else
   fi
 
   mint_free_line "$LINE"
+fi
+
+if [[ ! -f "$CREDENTIALS" ]]; then
+  echo "install.sh: plow-credentials is still missing after mint." >&2
+  echo "Do not run docker compose up until this file exists. Re-run this script." >&2
+  exit 1
 fi
 
 echo "Starting Compose with AGENT_ID=$AGENT_ID"
