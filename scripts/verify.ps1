@@ -70,7 +70,7 @@ function Register-Page {
         --install-url "https://github.com/kumanaya/hermes-cat-paw/blob/main/docs/INSTALL.md" `
         --video "KjWFtHh0EFE" `
         --image "https://raw.githubusercontent.com/kumanaya/hermes-cat-paw/main/hackathon-banner.png" `
-        --image "https://raw.githubusercontent.com/kumanaya/hermes-cat-paw/main/real-usage.png"
+        --image "https://raw.githubusercontent.com/kumanaya/hermes-cat-paw/main/docs/images/real-usage.png"
 }
 
 Write-Host "verify: Index client as uid hermes (never root)"
