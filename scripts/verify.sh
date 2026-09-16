@@ -19,6 +19,8 @@ if [[ -z "$("${COMPOSE[@]}" ps -q "$SERVICE" 2>/dev/null)" ]]; then
 fi
 
 echo "verify: repairing Index ledger ownership (sticky HERMES_HOME)"
+# Single quotes are deliberate: this payload expands inside the container.
+# shellcheck disable=SC2016
 "${COMPOSE[@]}" exec -T -u 0 "$SERVICE" sh -c '
   for f in /var/lib/hermes/.agent-index-state.json \
            /var/lib/hermes/.agent-index-state.json.new \

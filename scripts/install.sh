@@ -96,8 +96,8 @@ lower() {
 }
 
 print_free_names() {
-  local uid name number status count=0
-  while IFS=$'\t' read -r uid name number status; do
+  local uid name status count=0
+  while IFS=$'\t' read -r uid name _ status; do
     [[ "$status" == "free" ]] || continue
     printf '  %s\n' "$name"
     count=$((count + 1))
@@ -108,8 +108,8 @@ print_free_names() {
 }
 
 occupied_names() {
-  local uid name number status names=()
-  while IFS=$'\t' read -r uid name number status; do
+  local uid name status names=()
+  while IFS=$'\t' read -r uid name _ status; do
     [[ "$status" == "free" ]] && continue
     names+=("$name")
   done < <(lines_tsv)
@@ -127,16 +127,16 @@ first_free_name() {
 # Resolve a dashboard name, uid, or 1-based free-list index to uid + name + status.
 resolve_line() {
   local query="$1"
-  local q uid name number status i=0
+  local q uid name status i=0
   q="$(lower "$query")"
-  while IFS=$'\t' read -r uid name number status; do
+  while IFS=$'\t' read -r uid name _ status; do
     if [[ "$q" == "$(lower "$uid")" || "$q" == "$(lower "$name")" ]]; then
       printf '%s\t%s\t%s\n' "$uid" "$name" "$status"
       return 0
     fi
   done < <(lines_tsv)
   if [[ "$query" =~ ^[0-9]+$ ]]; then
-    while IFS=$'\t' read -r uid name number status; do
+    while IFS=$'\t' read -r uid name _ status; do
       [[ "$status" == "free" ]] || continue
       i=$((i + 1))
       if [[ "$i" == "$query" ]]; then
