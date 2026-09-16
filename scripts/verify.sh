@@ -72,6 +72,7 @@ register_page() {
     --runtime "Hermes / Plow Latch" \
     --repo "https://github.com/kumanaya/hermes-cat-paw" \
     --install-url "https://github.com/kumanaya/hermes-cat-paw/blob/main/docs/INSTALL.md" \
+    --video "KjWFtHh0EFE" \
     --image "https://raw.githubusercontent.com/kumanaya/hermes-cat-paw/main/hackathon-banner.png" \
     --image "https://raw.githubusercontent.com/kumanaya/hermes-cat-paw/main/real-usage.png"
 }
