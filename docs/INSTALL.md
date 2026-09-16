@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="../install-guide.png" alt="Hermes Cat Paw installation guide" width="760" />
+  <img src="images/install-guide.png" alt="Hermes Cat Paw installation guide" width="760" />
 </p>
 
 # Install Hermes Cat Paw

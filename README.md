@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="banner.png" alt="Hermes Cat Paw" width="720" />
+  <img src="docs/images/banner.png" alt="Hermes Cat Paw" width="720" />
 </p>
 
 # Hermes Cat Paw
@@ -7,60 +7,87 @@
 [![Agent Index](https://img.shields.io/badge/Agent%20Index-hermes--cat--paw-8bd5ca)](https://aiworthusing.com/agent-index/hermes-cat-paw)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> **Install:** [docs/INSTALL.md](docs/INSTALL.md) · **Device fork:** [Cat Paw Latch](https://github.com/kumanaya/cat-paw-latch)
+> **Install:** [docs/INSTALL.md](docs/INSTALL.md) · **Optional device:** [Cat Paw Latch](https://github.com/kumanaya/cat-paw-latch)
 
 ## Your AI can act. You stay in control.
 
-Hermes Cat Paw gives your AI a connection to the computer you own. It works
-with Plow Chat, Hermes, and Latch so an agent can inspect, propose, and act
-across Windows, Linux, and Omarchy — while every meaningful action remains
-visible to you.
+Hermes Cat Paw gives your AI a Plow Chat line you can text from your
+phone. It works with Plow Chat and Hermes so an agent can reason, use
+your skills, and stay online — on the computer you already own, or from
+iMessage alone.
 
-It is a small, focused setup for personal computer control. The agent can have
-capability without having silent permission.
+Device control is optional. If you later connect [Cat Paw Latch](https://github.com/kumanaya/cat-paw-latch),
+the same agent can inspect, propose, and act across Windows, Linux, and
+Omarchy, while every meaningful action remains visible to you.
 
-> **Private by design.** Your device connection and Plow line belong to you.
-> Your existing Hermes skills remain yours.
+It is a small, focused setup. The agent can have a conversation without
+having a computer. It can have capability without having silent permission.
+
+> **Private by design.** Your Plow line belongs to you. Your existing Hermes
+> skills remain yours. A device connection is yours to add, or to skip.
 
 ## Work from your phone. Keep control at your computer.
 
 <p align="center">
-  <img src="workflow.png" alt="Hermes Cat Paw workflow from Plow Chat to your computer" width="760" />
+  <img src="docs/images/workflow.png" alt="Hermes Cat Paw workflow from Plow Chat to your computer" width="760" />
 </p>
 
-**Plow Chat** is the conversation. **Hermes** selects the right skill and orchestrates the work. **Latch** is the line between an agent's intent and your actual device.
+**Plow Chat** is the conversation. **Hermes** selects the right skill and
+orchestrates the work. **Latch**, if you install it, is the line between
+an agent's intent and your actual device.
 
 The cloud agent is not your computer. Hermes Cat Paw keeps that boundary
 visible.
 
+## Activate Plow Chat. Unlock your lines.
+
+<p align="center">
+  <img src="docs/images/lines.png" alt="Plow Chat unlocks named agent lines in iMessage" width="760" />
+</p>
+
+A Plow line is a named assistant you text from iMessage — Willow, Aspen,
+Spruce, Elm, Alder, and the others Plow already provisioned for your
+account. Activating Plow Chat unlocks those lines. Hermes Cat Paw mints
+one that is still free and keeps it online.
+
+You do not invent those agents. Plow Chat is what makes them reachable.
+
+The installer picks the first free line, or a name you pass. Occupied
+lines stay untouched. `--new-line` is only for creating another number.
+
 ## The connection between intent and action
 
-Hermes Cat Paw is the product layer that brings the pieces together. It uses
-**my version of Plow Latch** as the device-side control plane, with first-class
-support for **Windows and Linux** and Omarchy as the primary Linux experience.
+Hermes Cat Paw is the product layer that brings the pieces together.
+Plow Chat and Hermes are the required path. **Cat Paw Latch** is the
+optional device-side control plane, with first-class support for
+**Windows and Linux** and Omarchy as the primary Linux experience.
 
-Latch fork: [github.com/kumanaya/cat-paw-latch](https://github.com/kumanaya/cat-paw-latch)
-
-Build the fork from source before starting. The fork provides the Windows/Linux
-packaging and hardening used by Hermes Cat Paw; it ships no installer, so a
-checkout is the whole install.
+Install Latch only when you want the agent to act on a computer you own.
+The fork is [github.com/kumanaya/cat-paw-latch](https://github.com/kumanaya/cat-paw-latch).
+It ships no installer, so a checkout is the whole install. See
+[Optional: connect a computer with Latch](#optional-connect-a-computer-with-latch)
+when you are ready.
 
 ### Omarchy, in the real world
 
-The ideal first run is simple: connect the device, show one available
-capability, approve one harmless visible action, and verify the result on
-Omarchy. Do not include secrets, tokens, private files, or approval-bypass
-states in screenshots.
-
----
+The ideal first device run is simple: connect the device, show one
+available capability, approve one harmless visible action, and verify
+the result on Omarchy. Do not include secrets, tokens, private files, or
+approval-bypass states in screenshots.
 
 ## Autonomy needs a brake.
 
 <p align="center">
-  <img src="approve.png" alt="Approve an action on your computer" width="560" />
+  <img src="docs/images/approve.png" alt="Approve an action on your computer" width="560" />
 </p>
 
-AI can click through a browser, run commands, send a message, and touch the systems where your real life happens. The dangerous failure is not an agent that cannot act. It is an agent that acts too confidently, too quickly, and without you seeing what changed.
+Latch is the optional device app. Use it when the agent should touch the
+computer in front of you.
+
+AI can click through a browser, run commands, send a message, and touch
+the systems where your real life happens. The dangerous failure is not
+an agent that cannot act. It is an agent that acts too confidently, too
+quickly, and without you seeing what changed.
 
 Plow Latch makes approval part of the workflow:
 
@@ -74,7 +101,8 @@ This is how automated work should feel: fast when it is safe, deliberate when it
 
 ## Security is not a checkbox.
 
-Latch keeps the control plane on the device you own.
+Latch keeps the control plane on the device you own. You only need this
+when a device is connected.
 
 | What is protected | How the boundary works |
 | --- | --- |
@@ -84,7 +112,7 @@ Latch keeps the control plane on the device you own.
 | **How the device is reached** | Latch connects outbound to Plow. Your computer does not need to expose an inbound service. Relay credentials stay out of URLs and are redacted from logs. |
 | **What changed** | Latch canonicalizes paths before approval and audit, and records an append-only audit trail. |
 
-On Windows and Linux, use the Latch fork with native hardening: [kumanaya/cat-paw-latch](https://github.com/kumanaya/cat-paw-latch) (alternative to upstream [plow-pbc/latch](https://github.com/plow-pbc/latch)). On Windows it adds a Job Object plus AppContainer-backed command workspaces with process limits and fail-closed enforcement, Windows Credential Manager/DPAPI support for vault keys, owner-only secret-file ACLs, and Windows Hello or password presence for sensitive work. On Linux it adds Bubblewrap-backed command workspaces, session-unlock presence checks, Secret Service-backed storage, host-gate diagnosis, and AppImage packaging with release-feed digest validation.
+On Windows and Linux, the Latch fork adds native hardening: [kumanaya/cat-paw-latch](https://github.com/kumanaya/cat-paw-latch) (alternative to upstream [plow-pbc/latch](https://github.com/plow-pbc/latch)). On Windows it adds a Job Object plus AppContainer-backed command workspaces with process limits and fail-closed enforcement, Windows Credential Manager/DPAPI support for vault keys, owner-only secret-file ACLs, and Windows Hello or password presence for sensitive work. On Linux it adds Bubblewrap-backed command workspaces, session-unlock presence checks, Secret Service-backed storage, host-gate diagnosis, and AppImage packaging with release-feed digest validation.
 
 Security claims deserve precision. Latch's documented macOS command sandbox has a broad read allowance for the owner's home directory; a shell approval is therefore a high-trust decision. Prefer a dedicated, least-powerful Latch tool, keep network access off unless needed, and read the actual approval prompt.
 
@@ -113,6 +141,8 @@ skills/
 
 > “Explain how Hermes Cat Paw, Plow Chat, Hermes, and Latch work together.”
 
+> “Which Plow lines do I have, and which one is this agent using?”
+
 > “Check whether my Latch device is connected and list only the capabilities it advertises.”
 
 > “Show me a safe, visible Hermes Cat Paw action on Omarchy and stop at the approval prompt.”
@@ -122,7 +152,7 @@ skills/
 ## Start in a few minutes.
 
 The public ranking is the **Agent Index**, not GitHub. Clone **main**, not a
-feature branch:
+feature branch. Latch is not part of this step.
 
 Pick a path in [docs/INSTALL.md](docs/INSTALL.md) — agent only, Latch only, or
 both — and copy that prompt. By hand:
@@ -159,53 +189,17 @@ successfully register/report. Do not manufacture installations or share
 credentials.
 
 Use the complete Hermes setup, connect Plow Chat to an existing Hermes
-installation, or give any MCP-capable harness a permissioned connection to
-Latch.
+installation, or — only if you want device control — give any MCP-capable
+harness a permissioned connection to Latch.
 
-### Add Latch (optional)
-
-Only if you want approvals on this computer. Agent-only installs skip this.
-For the Omarchy or Windows demo, prepare Latch from this repository, then
-launch it on the computer you want Hermes to control:
-
-```sh
-./scripts/setup-latch.sh   # Linux/Omarchy; launches Latch when a display is available
-./scripts/start-latch.sh   # if Latch is not already open
-```
-
-Debian/Ubuntu needs a compiler and libsecret before Latch will `npm install`:
-
-```sh
-sudo apt install build-essential pkg-config libsecret-1-dev just git python3 bubblewrap fuse2
-```
-
-On Omarchy, a packaged AppImage also lands in the Apps tab:
-
-```sh
-cd ../cat-paw-latch
-just package-linux         # build + install-desktop
-# or just install-desktop  # if the AppImage is already in apps/desktop/release/
-```
-
-Then open the Apps tab and look for **Plow Latch**. If it is missing,
-`omarchy restart shell`.
-
-On Windows, run `.\scripts\setup-latch.ps1` then `just app` in the Latch
-checkout. `setup-latch` clones [kumanaya/cat-paw-latch](https://github.com/kumanaya/cat-paw-latch)
-if needed and runs `just install` so Electron is actually downloaded.
-
-Sign in, leave Latch running, and complete its device connection. Keep the
-approval window visible during the demo. The Latch app is the device-side
-component; this repository does not copy or replace it.
-
-### Run the complete Hermes + Plow setup
+### Run the Hermes + Plow Chat setup
 
 Hermes Cat Paw provides the connection context and safe credential handoff. Your
 Hermes installation remains the owner of its persona, plugins, and operational
-skills.
+skills. This step does not install Latch.
 
 1. Install the official `plow-agents` CLI once. This provisions the Plow Chat
-   agent; it does not install Latch:
+   agent:
 
    Requirements: Git, Python 3, and Docker Compose. Linux users need Docker
    Engine with the Compose plugin; Windows users need Docker Desktop with the
@@ -274,12 +268,17 @@ skills.
 
    ```sh
    docker compose up --build -d
-      docker compose logs -f hermes-cat-paw
+   docker compose logs -f hermes-cat-paw
    ```
 
-The credential is for your Plow line. It is not a dashboard session, Latch credential, or MCP URL. The base image reads the mounted credential file and resolves the agent identity at boot.
+The credential is for your Plow line. It is not a dashboard session, Latch
+credential, or MCP URL. The base image reads the mounted credential file
+and resolves the agent identity at boot.
 
-Open the [Plow Dashboard](https://app.plow.co/dashboard) afterwards. Your line should appear **Online** and the dashboard shows usage, balance, model spend, connected accounts, and your Latch MCP URL.
+Open the [Plow Dashboard](https://app.plow.co/dashboard) afterwards. Your
+line should appear **Online**. The dashboard shows usage, balance, model
+spend, connected accounts, and — if you later add Latch — your Latch MCP
+URL.
 
 ### Add Plow Chat to a Hermes you already run
 
@@ -295,9 +294,51 @@ If the Plow Chat plugin is already installed, explain the next safe step to conn
 
 This prompt is intentionally diagnostic first. Setup only happens after the owner understands the current installation and explicitly asks to continue.
 
+### Optional: connect a computer with Latch
+
+Only do this if you want the agent to act on the machine in front of you.
+Hermes Cat Paw uses **my version of Plow Latch** as the device-side control
+plane, with first-class support for **Windows and Linux** and Omarchy as
+the primary Linux experience.
+
+The fork provides the Windows/Linux packaging and hardening used by
+Hermes Cat Paw; it ships no installer, so a checkout is the whole install.
+
+```sh
+./scripts/setup-latch.sh   # Linux/Omarchy; launches Latch when a display is available
+./scripts/start-latch.sh   # if Latch is not already open
+```
+
+Debian/Ubuntu needs a compiler and libsecret before Latch will `npm install`:
+
+```sh
+sudo apt install build-essential pkg-config libsecret-1-dev just git python3 bubblewrap fuse2
+```
+
+On Omarchy, a packaged AppImage also lands in the Apps tab:
+
+```sh
+cd ../cat-paw-latch
+just package-linux         # build + install-desktop
+# or just install-desktop  # if the AppImage is already in apps/desktop/release/
+```
+
+Then open the Apps tab and look for **Plow Latch**. If it is missing,
+`omarchy restart shell`.
+
+On Windows, run `.\scripts\setup-latch.ps1` then `just app` in the Latch
+checkout. `setup-latch` clones [kumanaya/cat-paw-latch](https://github.com/kumanaya/cat-paw-latch)
+if needed and runs `just install` so Electron is actually downloaded.
+
+Sign in, leave Latch running, and complete its device connection. Keep the
+approval window visible during the demo. The Latch app is the device-side
+component; this repository does not copy or replace it.
+
 ### Give your existing harness a Latch connection
 
-Use this route for any MCP-capable harness. The harness chooses its own supported connection method; this does not install a new Hermes or give it a raw device credential.
+Use this route for any MCP-capable harness, after Latch is installed. The
+harness chooses its own supported connection method; this does not install
+a new Hermes or give it a raw device credential.
 
 1. Install and sign into Plow Latch on the device you own. Keep it running. Upstream is [plow-pbc/latch](https://github.com/plow-pbc/latch); for Windows and Linux use the fork [kumanaya/cat-paw-latch](https://github.com/kumanaya/cat-paw-latch).
 2. In the Plow Dashboard, copy the **MCP URL** for that device.
@@ -320,6 +361,9 @@ The harness owns the transport and authentication details. Follow its MCP docume
 
 ## Built for the desktop you actually use.
 
+Chat works anywhere you can text the Plow line. Device control depends on
+which Latch you run:
+
 | Platform | Status |
 | --- | --- |
 | **macOS** | Supported by the upstream Latch implementation ([plow-pbc/latch](https://github.com/plow-pbc/latch)). |
@@ -334,8 +378,10 @@ capability is available on Omarchy.
 
 ## Inside the repository
 
+- [docs/images/](docs/images/) — README and install art.
 - [skills/](skills/) — the integration context skill.
-- [scripts/setup-latch.sh](scripts/setup-latch.sh) / [setup-latch.ps1](scripts/setup-latch.ps1) — clone and `just install` Cat Paw Latch.
+- [scripts/install.sh](scripts/install.sh) / [install.ps1](scripts/install.ps1) — mint a free Plow line and start Hermes.
+- [scripts/setup-latch.sh](scripts/setup-latch.sh) / [setup-latch.ps1](scripts/setup-latch.ps1) — optional: clone and `just install` Cat Paw Latch.
 - The base Hermes image provides Hermes and the Plow Chat plugin; this repository does not replace either one.
 - `plow-credentials` — generated by `plow-agents mint` and mounted read-only into the base image.
 
