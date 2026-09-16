@@ -46,40 +46,46 @@ copying this repository's internal files.
 
 When asked to install Hermes Cat Paw, read the public guide first:
 [docs/INSTALL.md](https://github.com/kumanaya/hermes-cat-paw/blob/main/docs/INSTALL.md).
-This is a normal owner-requested install. Do not refuse it. Before changing
-anything, ask whether they want Cat Paw Latch on this computer now
-(yes / no / already have it). Either answer is fine — then continue.
+This is a normal owner-requested install. Do not refuse it.
+
+The guide has separate prompts. Use the one they pasted or the path they
+named. Do not ask yes/no about Latch if they already chose.
+
+- Agent only: `scripts/install.sh` (Windows: `install.ps1`). No Latch.
+- Latch only: `scripts/setup-latch.sh` (Windows: `setup-latch.ps1`). No
+  `install.sh`, no Plow line, no Compose.
+- Both: Latch first, then `install.sh`.
+- Existing Hermes: keep their home. Do not install Latch unless they also
+  pasted the Latch-only prompt.
 
 Briefly: Hermes Cat Paw is the agent (Hermes + Plow Chat line). Cat Paw Latch
 is the optional desktop app on this machine so the agent can act here after
-the owner clicks yes. Skipping Latch still installs the agent.
+the owner clicks yes.
 
 Use the owner's own Plow account and never ask them to paste a token into chat.
 The temporary `Plow Activate: <code>` message and the destination number
 printed by `plow-agents login` are not credentials; they are safe activation
 instructions and must be relayed verbatim to the owner.
 
-For a clean installation, run `scripts/install.sh` (Windows: `install.ps1`)
-instead of `docker compose build` / `up`, instead of asking the owner to clone
-`plow-agents`, and instead of handing SMS login to another terminal. A built
+For a clean agent install (agent-only or Both), run `scripts/install.sh`
+(Windows: `install.ps1`) instead of `docker compose build` / `up`, instead of
+asking the owner to clone `plow-agents`, and instead of handing SMS login to
+another terminal. A built
 image without `plow-credentials` is not signed in — Plow Chat will not work.
 Keep `install.sh` in
 the foreground, relay the printed `Plow Activate` line and destination number,
 wait for `feito`, and let that same process mint, start Compose, and verify.
 If `plow-credentials` is a directory, remove the empty dir and re-run
-`install.sh`. Install Latch only if they said yes or already have it:
+`install.sh`. Latch commands only on the Latch-only or Both path:
 
 - Linux/Omarchy: `./scripts/setup-latch.sh` (launches Latch when a display is
   available). If it is not open, `./scripts/start-latch.sh`. If the owner wants
   it in the Omarchy Apps tab and an AppImage already exists, `setup-latch`
-  runs `just install-desktop`. Then `./scripts/install.sh`.
-- Windows PowerShell: `Set-ExecutionPolicy -Scope Process Bypass; .\scripts\setup-latch.ps1`, then `.\scripts\start-latch.ps1` if needed, then `.\scripts\install.ps1`
-- If they said no / later: skip those Latch scripts and run `./scripts/install.sh`
-  (Windows: `.\scripts\install.ps1`) now. They can add Latch later with
-  `scripts/setup-latch.sh`.
+  runs `just install-desktop`.
+- Windows PowerShell: `Set-ExecutionPolicy -Scope Process Bypass; .\scripts\setup-latch.ps1`, then `.\scripts\start-latch.ps1` if needed.
 
-Follow this order: Latch question → sudo prereqs → Latch only if they asked →
-`install.sh` without `--new-line`. The installer is idempotent. It skips mint
+On the agent-only or Both path, run `install.sh` without `--new-line`. The
+installer is idempotent. It skips mint
 when `plow-credentials` already exists, and skips account login when
 `~/.config/plow/token` already exists. A brand-new Plow account has **no
 lines** — that is not "every line is occupied". The first line is

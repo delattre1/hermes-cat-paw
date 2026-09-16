@@ -124,11 +124,14 @@ skills/
 The public ranking is the **Agent Index**, not GitHub. Clone **main**, not a
 feature branch:
 
+Pick a path in [docs/INSTALL.md](docs/INSTALL.md) — agent only, Latch only, or
+both — and copy that prompt. By hand:
+
 ```sh
 git clone https://github.com/kumanaya/hermes-cat-paw.git
 cd hermes-cat-paw
-./scripts/setup-latch.sh
-./scripts/install.sh
+./scripts/install.sh          # agent (SMS line)
+# ./scripts/setup-latch.sh    # add Latch when you want approvals on this computer
 ```
 
 `install.sh` always boots `AGENT_ID=hermes-cat-paw`. Other people's installs
@@ -159,8 +162,9 @@ Use the complete Hermes setup, connect Plow Chat to an existing Hermes
 installation, or give any MCP-capable harness a permissioned connection to
 Latch.
 
-### First: build the Latch device app
+### Add Latch (optional)
 
+Only if you want approvals on this computer. Agent-only installs skip this.
 For the Omarchy or Windows demo, prepare Latch from this repository, then
 launch it on the computer you want Hermes to control:
 
