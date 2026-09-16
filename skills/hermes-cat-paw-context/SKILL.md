@@ -133,11 +133,13 @@ plugin for that Hermes version and preserve the existing configuration.
 
 To keep this install as Hermes Cat Paw, configure its launcher with
 `AGENT_ID=hermes-cat-paw` and keep the same `HERMES_HOME` that contains the
-active `state.db`. The variable alone is not enough: run the official usage
-client from the same supervisor that starts Hermes, with the owner's existing
+active `state.db`. The variable alone is not enough: fetch the official usage
+client pinned in `vendor/client.pin` (the same revision the image bakes),
+register it once with `--register --agent hermes-cat-paw`, and run it hourly as
+the Hermes user with `AGENT_ID`, `HERMES_HOME`, and the owner's existing
 `PLOW_AGENT_TOKEN` supplied by the credential manager or launcher — never by
-printing it, copying it into chat, or committing it. The client must run as
-the Hermes user and use the correct `HERMES_HOME`.
+printing it, copying it into chat, or committing it. The plugin carries the
+chat; this heartbeat is what reports usage.
 
 Before changing a persistent launcher, show the owner the proposed change and
 confirm it will preserve the current persona, sessions, skills, provider, and

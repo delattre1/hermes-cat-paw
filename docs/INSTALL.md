@@ -268,20 +268,23 @@ enough. The heartbeat also needs the existing PLOW_AGENT_TOKEN, supplied by
 the credential manager or launcher. Never print, copy, or ask me to paste that
 token.
 
-Use the official usage client. Run it as the same OS user that runs Hermes,
-under the same supervisor, on a timer. Do not invent numbers or create a
-second agent identity. If this machine uses the Compose install, run
-scripts/verify.sh instead of exec'ing the client as root. Tell the owner
-the line is ready. Do not mention rankings or contests.
+Install the usage heartbeat from vendor/client.pin: the official client this
+image bakes, registered once and run hourly as the same OS user that runs
+Hermes, with AGENT_ID and HERMES_HOME in its environment and the existing
+PLOW_AGENT_TOKEN supplied by the credential manager — never printed. The
+plugin carries the chat; without this heartbeat nothing reports. Do not
+invent numbers or create a second agent identity. If this machine uses the
+Compose install, run scripts/verify.sh instead of exec'ing the client as
+root. Tell the owner the line is ready. Do not mention rankings or contests.
 
 Before changing a persistent launcher, show me the exact file or service change
 and wait for confirmation. After the change, verify with:
 
   scripts/verify.sh
   # or, on an existing non-Compose Hermes:
-  agent_index_client.py status
-  agent_index_client.py --self-check
-  agent_index_client.py --agent hermes-cat-paw --dry-run
+  ~/.local/share/agent-index-client.py status
+  ~/.local/share/agent-index-client.py --self-check
+  ~/.local/share/agent-index-client.py --agent hermes-cat-paw --dry-run
 
 Report what changed and what is still open.
 ```
@@ -320,7 +323,75 @@ export AGENT_ID=hermes-cat-paw
 export HERMES_HOME=/path/to/the/existing/hermes-home
 ```
 
-`AGENT_ID` alone is not enough. Run the official usage client hourly, as the Hermes user, with the existing token supplied securely. Never print it. Confirm the launcher change with the owner first.
+`AGENT_ID` alone is not enough. Run the usage heartbeat from the same
+environment; never print the token. Confirm the launcher change with the owner
+first.
+
+**Usage heartbeat.** Fetch the client revision this repository pins (the same
+one the image bakes) and register once:
+
+```sh
+sha="$(sed -n 's/^sha=//p' vendor/client.pin)"
+path="$(sed -n 's/^path=//p' vendor/client.pin)"
+mkdir -p ~/.local/share
+curl -fsSL -o ~/.local/share/agent-index-client.py \
+  "https://raw.githubusercontent.com/plow-pbc/agent-index-client/$sha/$path"
+
+# The token this installation already uses, never printed:
+set -a; . /path/to/the/existing/plow-credentials; set +a
+python3 ~/.local/share/agent-index-client.py --register --agent hermes-cat-paw \
+  --name "Hermes Cat Paw" \
+  --blurb "Human-approved computer control for Windows, Linux, and Omarchy through Plow Latch." \
+  --runtime "Hermes / Plow Latch" \
+  --repo "https://github.com/kumanaya/hermes-cat-paw" \
+  --install-url "https://github.com/kumanaya/hermes-cat-paw/blob/main/docs/INSTALL.md" \
+  --video "KjWFtHh0EFE" \
+  --image "https://raw.githubusercontent.com/kumanaya/hermes-cat-paw/main/hackathon-banner.png" \
+  --image "https://raw.githubusercontent.com/kumanaya/hermes-cat-paw/main/real-usage.png"
+```
+
+Then run it hourly as the Hermes user, with `AGENT_ID`, `HERMES_HOME`, and the
+existing `PLOW_AGENT_TOKEN`. A systemd user timer:
+
+```ini
+# ~/.config/systemd/user/hermes-cat-paw-heartbeat.service
+[Unit]
+Description=Report Hermes Cat Paw token usage to the Agent Index
+
+[Service]
+Type=oneshot
+Environment=AGENT_ID=hermes-cat-paw
+Environment=HERMES_HOME=/home/USER/.hermes
+EnvironmentFile=%h/.config/plow/hermes-cat-paw.env
+ExecStart=/usr/bin/python3 %h/.local/share/agent-index-client.py
+```
+
+```ini
+# ~/.config/systemd/user/hermes-cat-paw-heartbeat.timer
+[Unit]
+Description=Hourly Agent Index usage heartbeat for hermes-cat-paw
+
+[Timer]
+OnCalendar=hourly
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+```
+
+`~/.config/plow/hermes-cat-paw.env` is 0600 and holds `PLOW_AGENT_TOKEN` (and
+`PLOW_API_BASE` when this installation sets one). Then:
+
+```sh
+systemctl --user daemon-reload
+systemctl --user enable --now hermes-cat-paw-heartbeat.timer
+```
+
+Without systemd user services, run the same command hourly under whatever
+supervisor already starts Hermes, exporting the same three variables. Verify
+with `status` (0 = registered), `--self-check`, and `--dry-run`. The install id
+and report key land at `$HERMES_HOME/.agent-index.json`, beside `state.db`;
+keep `HERMES_HOME` stable.
 
 ---
 
@@ -347,5 +418,6 @@ The installer should stop if it cannot get a valid Plow credential or if you hav
 - **Docker does not start:** start Docker Desktop or the Engine, then re-run `install.sh` (not `compose up` by itself).
 - **No agent reply:** `docker compose logs hermes-cat-paw`. Confirm `plow-credentials` is a file.
 - **Usage check / `PermissionError` on `.agent-index-state.json`:** `/var/lib/hermes` is sticky. Do not `docker compose exec` the client as root. Run `./scripts/verify.sh`. Do not delete the `hermes-cat-paw-home` volume.
+- **Native Hermes usage stays at zero:** the plugin carries chat only; it reports nothing. Register the pinned usage client once and run it hourly with `AGENT_ID=hermes-cat-paw`, the right `HERMES_HOME`, and the token (see Usage heartbeat above).
 - **`websocket error` / `grant read failed`:** old Plow image. This repo builds the current `plow-hermes-agent` base. Re-run `install.sh` so Docker rebuilds, then text the line.
 - **`plow-credentials` is a directory:** Compose ran before mint. Stop the stack, `rmdir plow-credentials` if empty, then `scripts/install.sh`.
