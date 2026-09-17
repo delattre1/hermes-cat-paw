@@ -159,7 +159,7 @@ notes: PR review and later staging recon share this folder
 | Fork PR checkout | `checkout/untrusted/pr-<n>/` |
 | Pasted snippet | `reviews/snippet-<utc>/input` |
 | `git diff` / `gh pr diff` | `diffs/` |
-| Gitleaks, Semgrep, Trivy, nmap, subfinder | matching `scans/…` |
+| Gitleaks, Semgrep, Trivy, osv-scanner, nmap, subfinder | matching `scans/…` (static CLIs may run in the agent image; copy JSON here via Latch when connected) |
 | Screenshots, HAR | `artifacts/` |
 | Per-PR writeup | `reviews/pr-<n>/NOTES.md` |
 | Engagement report | `reports/REPORT.md` (and `reports/<utc>.md` if you rotate) |

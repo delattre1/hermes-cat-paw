@@ -15,9 +15,17 @@ RUN set -eu; \
     [ "$got" = "$want" ] || { echo "agent-index client checksum mismatch" >&2; exit 1; }; \
     chmod 0644 /opt/plow/agent-index-client.py
 
+# Static review CLIs (gitleaks, semgrep, trivy, …). Live scanners (nmap,
+# subfinder, nuclei) are not baked — they run on Latch. The 818 playbooks
+# are still cloned at install time.
+COPY vendor/review-tools.pin /opt/cat-paw/review-tools.pin
+COPY image/install-review-tools.sh image/verify-review-tools.sh /opt/cat-paw/
+RUN chmod 0755 /opt/cat-paw/install-review-tools.sh /opt/cat-paw/verify-review-tools.sh \
+ && /opt/cat-paw/install-review-tools.sh \
+ && /opt/cat-paw/verify-review-tools.sh
+
 # Hermes Cat Paw overlays product skills (Plow Chat, Plow Latch, cybersecurity
-# pack routing, change-review, target-workspace). The 818 playbooks are cloned
-# at install time, not baked here.
+# pack routing, change-review, target-workspace, image-tools).
 COPY --chown=10000:10000 skills/ /var/lib/hermes/skills/
 COPY --chown=10000:10000 skills/ /opt/hermes/skills/
 

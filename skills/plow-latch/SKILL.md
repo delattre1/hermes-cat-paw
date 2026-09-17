@@ -51,10 +51,13 @@ Recon and other live probes belong here, not in the cloud. Read
 the wrong evidence.
 
 A pull request, patch, or snippet is `change-review` after
-`target-workspace`. Clone under `~/CatPaw/workspaces/<slug>/checkout/…`
-on **this computer**. Never `/var/lib/hermes` (the container) and never
-`~/Plow`. Do not execute a fork PR's `npm install` / tests unless the owner
-accepted untrusted code on the card. GitHub tokens stay in the vault.
+`target-workspace`. Static gates (`gitleaks`, `semgrep`, `trivy`) run in
+the **agent image** (`image-tools`) on a paste or a public diff. Clone
+private trees under `~/CatPaw/workspaces/<slug>/checkout/…` on **this
+computer**. Never `/var/lib/hermes` and never `~/Plow`. Do not execute a
+fork PR's `npm install` / tests unless the owner accepted untrusted code
+on the card. GitHub tokens stay in the vault. Do not apt-get gitleaks on
+this laptop to review a patch.
 
 ## MCP correctly
 

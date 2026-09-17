@@ -1,0 +1,75 @@
+# Static review CLIs baked into the Hermes Cat Paw image at build time.
+# Live network scanners (nmap, subfinder, nuclei, ffuf, ProjectDiscovery
+# httpx) are not here — they must run on Latch so the target sees the
+# owner's IP. Playbooks stay a runtime clone (cybersecurity-skills.pin).
+#
+# kind=tar  GitHub tarball; installer finds the binary named `tool`
+# kind=bin  raw binary
+# kind=uv   uv tool install tool==version
+# kind=apt  Debian package (name = tool)
+
+tool=jq
+kind=apt
+
+tool=shellcheck
+kind=apt
+
+tool=gitleaks
+version=8.30.1
+kind=tar
+amd64_url=https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+amd64_sha256=551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+arm64_url=https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_arm64.tar.gz
+arm64_sha256=e4a487ee7ccd7d3a7f7ec08657610aa3606637dab924210b3aee62570fb4b080
+
+tool=trivy
+version=0.74.0
+kind=tar
+amd64_url=https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-64bit.tar.gz
+amd64_sha256=2ae6fe3ee734b7fdf11335663e18c75ea12dccc76062f09f164a3b0f8be4371a
+arm64_url=https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-ARM64.tar.gz
+arm64_sha256=b94ce1976bbf3c15b514b605ee88be7c6d94a29be2302847ff01cb794d47aad5
+
+tool=gh
+version=2.101.0
+kind=tar
+amd64_url=https://github.com/cli/cli/releases/download/v2.101.0/gh_2.101.0_linux_amd64.tar.gz
+amd64_sha256=9bca2d1c16825f109907a23307628a2f0698fbf99662b73a5cf0b020293072b8
+arm64_url=https://github.com/cli/cli/releases/download/v2.101.0/gh_2.101.0_linux_arm64.tar.gz
+arm64_sha256=b57e8063f18862647c9d22727c32e9da1b963f8bf9db648fe123a6975695640f
+
+tool=kubesec
+version=2.14.2
+kind=tar
+amd64_url=https://github.com/controlplaneio/kubesec/releases/download/v2.14.2/kubesec_linux_amd64.tar.gz
+amd64_sha256=bc252e35f01bc4f133a49404315da3ccfed0209cc9baba33883eaeca0656f35c
+arm64_url=https://github.com/controlplaneio/kubesec/releases/download/v2.14.2/kubesec_linux_arm64.tar.gz
+arm64_sha256=8f53db7a847bcf3a2fc332bfb72520b3a8735b52d82f7b09fa052f7e79cb4f3a
+
+tool=yq
+version=4.53.6
+kind=tar
+amd64_url=https://github.com/mikefarah/yq/releases/download/v4.53.6/yq_linux_amd64.tar.gz
+amd64_sha256=38b907b21b1b04327fb9481c595331d925a67c6ee1aabd0ef419d0b7d12dfb3d
+arm64_url=https://github.com/mikefarah/yq/releases/download/v4.53.6/yq_linux_arm64.tar.gz
+arm64_sha256=d5e7531273d45c5d4b7abb4a1597c47a0fecb5d6b081dfa755064b38ffcc34f4
+
+tool=hadolint
+version=2.15.1
+kind=bin
+amd64_url=https://github.com/hadolint/hadolint/releases/download/v2.15.1/hadolint-linux-x86_64
+amd64_sha256=c7187db94eeeeca956519a6af171adc31453941a1e777961f6e680f697c8c507
+arm64_url=https://github.com/hadolint/hadolint/releases/download/v2.15.1/hadolint-linux-arm64
+arm64_sha256=f6198ef8090f404dbb771abfee086eb8c48ac177f30da7fd3510aca35b344b5d
+
+tool=osv-scanner
+version=2.6.0
+kind=bin
+amd64_url=https://github.com/google/osv-scanner/releases/download/v2.6.0/osv-scanner_linux_amd64
+amd64_sha256=ca69b3d3cd08f889a49dc0a383122f71cc528b83803671df5fd874d97485b108
+arm64_url=https://github.com/google/osv-scanner/releases/download/v2.6.0/osv-scanner_linux_arm64
+arm64_sha256=2c71403eb443d05891c4f268c3ad771cf4f16e5443463fd7851ef8f454d3c7e4
+
+tool=semgrep
+version=1.177.0
+kind=uv

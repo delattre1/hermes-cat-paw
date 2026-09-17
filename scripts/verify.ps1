@@ -106,6 +106,9 @@ if ($status -eq 0) {
 }
 $pack = docker compose -f $ComposeFile exec -T -u hermes $Service sh -c 'find /var/lib/hermes/skills/cybersecurity-skills -name SKILL.md -type f 2>/dev/null | wc -l'
 Write-Host "verify: cybersecurity-skills pack=$($pack.Trim()) (run scripts/install-skills.ps1 if this is 0)"
+Write-Host "verify: baked review CLIs"
+docker compose -f $ComposeFile exec -T -u hermes $Service /opt/cat-paw/verify-review-tools.sh
+if ($LASTEXITCODE -ne 0) { throw "verify: review CLIs missing. Rebuild the image (scripts/install.ps1)." }
 Write-Host "verify: do not docker compose exec the Index client as root; use this script or -u hermes."
 try {
     & (Join-Path $PSScriptRoot "announce-line.ps1")
