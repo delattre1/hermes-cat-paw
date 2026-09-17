@@ -15,9 +15,9 @@ RUN set -eu; \
     [ "$got" = "$want" ] || { echo "agent-index client checksum mismatch" >&2; exit 1; }; \
     chmod 0644 /opt/plow/agent-index-client.py
 
-# Static review CLIs (gitleaks, semgrep, trivy, …). Live scanners (nmap,
-# subfinder, nuclei) are not baked — they run on Latch. The 818 playbooks
-# are still cloned at install time.
+# Tiny review CLIs (gitleaks, gh, jq, yq, shellcheck). No Semgrep/Trivy/
+# nmap — those bloat the image. Live probes stay on Latch. Playbooks clone
+# at install time.
 COPY vendor/review-tools.pin /opt/cat-paw/review-tools.pin
 COPY image/install-review-tools.sh image/verify-review-tools.sh /opt/cat-paw/
 RUN chmod 0755 /opt/cat-paw/install-review-tools.sh /opt/cat-paw/verify-review-tools.sh \

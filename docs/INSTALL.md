@@ -22,8 +22,8 @@ You can add the other piece later.
 - **Cybersecurity pack** is
   [mukul975/Anthropic-Cybersecurity-Skills](https://github.com/mukul975/Anthropic-Cybersecurity-Skills)
   (Apache-2.0), cloned into the Hermes home at install. Authorized testing
-  only. The Compose image already includes static review CLIs (gitleaks,
-  semgrep, trivy, …). Live probes (nmap, browser) still go through Latch.
+  only. The Compose image stays slim (gitleaks, gh, jq, yq, shellcheck).
+  Live probes and heavy scanners go through Latch.
 
 If you are the installing agent: read `plow-chat` (and `plow-latch` when the
 path includes Latch). Do not dump installer internals at the owner.
@@ -101,8 +101,8 @@ scripts/install-skills.sh loading the cybersecurity pack (authorized
 testing only). The installer prints `announce-line: dashboard name` and
 `announce-line: text this number`. In the same turn, tell the owner:
 the agent is installed, the pack is in Hermes, the dashboard name, and
-the phone number they must text. Static review CLIs are in the image
-(gitleaks, semgrep, trivy). Never say "the line is ready" without
+the phone number they must text. The image stays slim (gitleaks, gh,
+jq, yq, shellcheck). Never say "the line is ready" without
 both. Never make them guess. Never print tokens or plow-credentials.
 
 Keep the volume hermes-cat-paw-home. Do not docker compose down -v on a
@@ -346,9 +346,9 @@ The installer loads the cybersecurity pack. To load it again later:
 ```
 
 These playbooks are for authorized testing only. Live probes (browser, nmap,
-curl) should go through Latch so you see the intent before it runs. Static
-review CLIs are already in the Compose image — do not apt-get gitleaks on
-the laptop just to review a patch.
+curl) should go through Latch so you see the intent before it runs. The
+image only has gitleaks, gh, jq, yq, shellcheck — do not apt-get extra
+scanners into the container.
 
 If Latch is installed:
 

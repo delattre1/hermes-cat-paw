@@ -1,6 +1,6 @@
 ---
 name: cybersecurity-pack
-description: Use for authorized recon, pentest, bug bounty, DFIR, cloud, identity, SOC, threat hunting, and security reporting. Explains the mukul975/Anthropic-Cybersecurity-Skills pack (818 SKILL.md files, subdomain in frontmatter), when Latch must run live probes, that static CLIs are already in this image (image-tools), and that unauthorized targets are out of scope. Open target-workspace first (one folder per target). Pull requests, patches, and snippets go through change-review.
+description: Use for authorized recon, pentest, bug bounty, DFIR, cloud, identity, SOC, threat hunting, and security reporting. Explains the mukul975/Anthropic-Cybersecurity-Skills pack (818 SKILL.md files, subdomain in frontmatter), when Latch must run live probes, that this image is slim (image-tools: gitleaks, gh, jq, yq, shellcheck), and that unauthorized targets are out of scope. Open target-workspace first (one folder per target). Pull requests, patches, and snippets go through change-review.
 metadata:
   hermes:
     category: context
@@ -108,8 +108,9 @@ You reason in the cloud. The owner's computer is where probes **run**.
   `~/CatPaw/workspaces/<slug>/scans/…` and `reports/` on the Latch host.
   Not the Hermes container, not `~/Plow`, not `/tmp`.
 - Static review of a paste or a public diff → image CLIs (`gitleaks`,
-  `semgrep`, `trivy`, `osv-scanner`). Still copy the report into the
-  workspace when Latch is connected.
+  `gh`, `jq`, `yq`, `shellcheck`). Semgrep / Trivy stay on Latch, or
+  label **not tested**. Still copy the report into the workspace when
+  Latch is connected.
 - Secrets (bounty platform cookies, API tokens) stay in the Latch vault.
   Fill with `fill_secret`. Never paste them into chat.
 - A `pending` handle is an approval card. Poll `plow_get_result`. Do not
