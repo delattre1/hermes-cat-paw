@@ -50,10 +50,10 @@ Recon and other live probes belong here, not in the cloud. Read
 / `plow_run_command` on this host. A datacenter fetch is the wrong IP and
 the wrong evidence.
 
-A pull request, patch, or snippet is `change-review`. Clone and `git diff`
-on this computer (`~/Plow/reviews/…`). Do not execute a fork PR's
-`npm install` / tests unless the owner accepted untrusted code on the
-card. GitHub tokens stay in the vault.
+A pull request, patch, or snippet is `change-review` after
+`target-workspace`. Clone under `~/Plow/workspaces/<slug>/checkout/…`.
+Do not execute a fork PR's `npm install` / tests unless the owner
+accepted untrusted code on the card. GitHub tokens stay in the vault.
 
 ## MCP correctly
 
@@ -94,7 +94,9 @@ Least power:
 4. Session handles are capabilities. Do not log or share them.
 
 Paths are canonicalized **before** the approval card (symlink-safe). Prefer
-`~/Plow` — reads/writes there auto-approve unless the device is deny-all.
+`~/Plow/workspaces/<slug>/` (`target-workspace`) — reads/writes under
+`~/Plow` auto-approve unless the device is deny-all. Do not dump evidence
+in `/tmp` or mix two targets in one folder.
 
 File payload cap: 8 MiB per call.
 
