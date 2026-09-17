@@ -133,10 +133,10 @@ if [ "$chat_state" != "connected" ]; then
 fi
 
 pack="$("${COMPOSE[@]}" exec -T -u hermes "$SERVICE" sh -c \
-  'find /var/lib/hermes/skills/recon-skills -name SKILL.md -type f 2>/dev/null | wc -l' || true)"
+  'find /var/lib/hermes/skills/cybersecurity-skills -name SKILL.md -type f 2>/dev/null | wc -l' || true)"
 pack="${pack//$'\r'/}"
 pack="${pack#"${pack%%[![:space:]]*}"}"
-echo "verify: recon-skills pack=${pack:-0} (run scripts/install-skills.sh if this is 0)"
+echo "verify: cybersecurity-skills pack=${pack:-0} (run scripts/install-skills.sh if this is 0)"
 
 if [ "$status" -eq 0 ]; then
   echo "verify: container OK, usage heartbeat signed in."

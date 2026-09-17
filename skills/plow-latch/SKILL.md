@@ -45,9 +45,10 @@ Reaching a **person** (text/email from your line) is `plow_send_message`
 (see `plow-chat`). Never send via the computer's Messages or Mail — that
 goes out as the owner. "Draft an email" is a draft on the computer, unsent.
 
-Recon and other live probes belong here, not in the cloud. Read `recon-pack`
-first: authorized targets only, then `plow_browser_open` / `plow_run_command`
-on this host. A datacenter fetch is the wrong IP and the wrong evidence.
+Recon and other live probes belong here, not in the cloud. Read
+`cybersecurity-pack` first: authorized targets only, then `plow_browser_open`
+/ `plow_run_command` on this host. A datacenter fetch is the wrong IP and
+the wrong evidence.
 
 ## MCP correctly
 

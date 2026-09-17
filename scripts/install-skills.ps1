@@ -1,19 +1,20 @@
-# Load the pinned recon skill pack into a Hermes home. Default destination is
-# the running Compose agent's /var/lib/hermes. Authorized testing only.
+# Load the pinned Anthropic Cybersecurity Skills pack into a Hermes home.
+# Default destination is the running Compose agent's /var/lib/hermes.
 param(
-    [string]$Home,
+    [Alias("Home")]
+    [string]$HomeDir,
     [switch]$List
 )
 
 $ErrorActionPreference = "Stop"
 
 $Root = Split-Path -Parent $PSScriptRoot
-$Pin = Join-Path $Root "vendor\recon-skills.pin"
-$Tools = Join-Path $Root ".tools\recon-skills"
+$Pin = Join-Path $Root "vendor\cybersecurity-skills.pin"
+$Tools = Join-Path $Root ".tools\cybersecurity-skills"
 $ComposeFile = Join-Path $Root "compose.yml"
 $Service = "hermes-cat-paw"
-$Segments = @("auth", "chains", "infra", "meta", "recon", "redteam")
-$Docs = @("LICENSE", "SOUL.md", "AGENTS.md", "STYLE.md", "README.md")
+$PackName = "cybersecurity-skills"
+$Docs = @("LICENSE", "SECURITY.md", "SCOPE.md", "AGENTS.md", "README.md", "index.json")
 
 $repo = $null
 $sha = $null
@@ -24,40 +25,67 @@ Get-Content -LiteralPath $Pin | ForEach-Object {
 if (-not $repo -or -not $sha) { throw "install-skills.ps1: malformed $Pin" }
 
 if (-not (Test-Path -LiteralPath (Join-Path $Tools ".git"))) {
-    Write-Host "install-skills.ps1: cloning recon-skills"
+    Write-Host "install-skills.ps1: cloning cybersecurity-skills"
     New-Item -ItemType Directory -Force -Path (Split-Path -Parent $Tools) | Out-Null
-    git clone $repo $Tools
+    git clone --depth 1 $repo $Tools
     if ($LASTEXITCODE -ne 0) { throw "git clone failed" }
 }
+$sparse = Join-Path $Tools ".git\info\sparse-checkout"
+if (Test-Path -LiteralPath $sparse) {
+    git -C $Tools sparse-checkout disable
+}
 Write-Host "install-skills.ps1: checking out $sha"
-git -C $Tools fetch origin $sha
+git -C $Tools fetch --depth 1 origin $sha
 if ($LASTEXITCODE -ne 0) { throw "git fetch failed" }
 git -C $Tools checkout --detach $sha
 if ($LASTEXITCODE -ne 0) { throw "git checkout failed" }
 $got = (git -C $Tools rev-parse HEAD).Trim()
 if ($got -ne $sha) { throw "install-skills.ps1: expected $sha, got $got" }
 
-$n = @(Get-ChildItem -LiteralPath $Tools -Filter SKILL.md -Recurse -File).Count
-Write-Host "install-skills.ps1: $n SKILL.md files at $sha"
-
-if ($List) {
-    Get-ChildItem -LiteralPath $Tools -Filter SKILL.md -Recurse -File |
-        ForEach-Object { $_.FullName.Substring($Tools.Length + 1) } |
-        Sort-Object
-    return
+$skillsRoot = Join-Path $Tools "skills"
+if (-not (Test-Path -LiteralPath $skillsRoot)) {
+    throw "install-skills.ps1: missing skills/ in checkout"
 }
 
-$stage = Join-Path ([System.IO.Path]::GetTempPath()) ("recon-skills-" + [guid]::NewGuid().ToString("n"))
+$skillFiles = @(Get-ChildItem -LiteralPath $skillsRoot -Filter SKILL.md -Recurse -File)
+$n = $skillFiles.Count
+Write-Host "install-skills.ps1: $n SKILL.md files at $sha"
+Write-Host "install-skills.ps1: skills per subdomain (frontmatter):"
+$skillFiles |
+    ForEach-Object {
+        $sub = $null
+        foreach ($line in Get-Content -LiteralPath $_.FullName -TotalCount 40) {
+            if ($line -match '^subdomain:\s*(.+)$') {
+                $sub = $Matches[1].Trim().Trim("`"'")
+                break
+            }
+        }
+        if (-not $sub) { $sub = "(none)" }
+        $sub
+    } |
+    Group-Object |
+    Sort-Object Count -Descending |
+    ForEach-Object { "{0,4}  {1}" -f $_.Count, $_.Name }
+
+if ($List) { return }
+
+function Copy-Docs([string]$Dest) {
+    foreach ($name in $Docs) {
+        $from = Join-Path $Tools $name
+        if (Test-Path -LiteralPath $from) {
+            Copy-Item -LiteralPath $from -Destination (Join-Path $Dest $name) -Force
+        }
+    }
+}
+
+$stage = Join-Path ([System.IO.Path]::GetTempPath()) ("cybersecurity-skills-" + [guid]::NewGuid().ToString("n"))
 New-Item -ItemType Directory -Force -Path $stage | Out-Null
 try {
-    foreach ($name in ($Segments + $Docs)) {
-        $from = Join-Path $Tools $name
-        if (-not (Test-Path -LiteralPath $from)) { throw "missing $name in recon-skills checkout" }
-        Copy-Item -LiteralPath $from -Destination (Join-Path $stage $name) -Recurse -Force
-    }
+    Copy-Item -Path (Join-Path $skillsRoot "*") -Destination $stage -Recurse -Force
+    Copy-Docs $stage
 
-    if ($Home) {
-        $dest = Join-Path $Home "skills\recon-skills"
+    if ($HomeDir) {
+        $dest = Join-Path $HomeDir "skills\$PackName"
         New-Item -ItemType Directory -Force -Path $dest | Out-Null
         Copy-Item -Path (Join-Path $stage "*") -Destination $dest -Recurse -Force
         Write-Host "install-skills.ps1: wrote $dest ($n skills)"
@@ -70,13 +98,13 @@ try {
     }
 
     Write-Host "install-skills.ps1: copying pack into the Compose agent"
-    docker compose -f $ComposeFile exec -T -u 0 $Service mkdir -p /var/lib/hermes/skills/recon-skills
-    if ($LASTEXITCODE -ne 0) { throw "mkdir recon-skills failed" }
-    tar -C $stage -cf - @($Segments + $Docs) |
-        docker compose -f $ComposeFile exec -T -u 0 $Service tar -C /var/lib/hermes/skills/recon-skills -xf -
+    docker compose -f $ComposeFile exec -T -u 0 $Service mkdir -p "/var/lib/hermes/skills/$PackName"
+    if ($LASTEXITCODE -ne 0) { throw "mkdir $PackName failed" }
+    tar -C $stage -cf - . |
+        docker compose -f $ComposeFile exec -T -u 0 $Service tar -C "/var/lib/hermes/skills/$PackName" -xf -
     if ($LASTEXITCODE -ne 0) { throw "tar into container failed" }
-    docker compose -f $ComposeFile exec -T -u 0 $Service chown -R hermes:hermes /var/lib/hermes/skills/recon-skills
-    $landed = docker compose -f $ComposeFile exec -T -u hermes $Service sh -c 'find /var/lib/hermes/skills/recon-skills -name SKILL.md -type f | wc -l'
+    docker compose -f $ComposeFile exec -T -u 0 $Service chown -R hermes:hermes "/var/lib/hermes/skills/$PackName"
+    $landed = docker compose -f $ComposeFile exec -T -u hermes $Service sh -c "find /var/lib/hermes/skills/$PackName -name SKILL.md -type f | wc -l"
     Write-Host "install-skills.ps1: container pack has $($landed.Trim()) SKILL.md files"
     Write-Host "install-skills.ps1: authorized testing only. Live probes go through Latch."
 }

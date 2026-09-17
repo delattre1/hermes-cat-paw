@@ -46,9 +46,12 @@ prepare_home() {
       chmod 0755 "$dst_root/$name" || true
       chmod 0644 "$dst_root/$name/SKILL.md" || true
     done
-    # Retired overlay skill. The volume would otherwise keep first-boot copy.
+    # Retired overlay skills. The volume would otherwise keep first-boot copy.
     if [ -d "$dst_root/hermes-cat-paw-context" ]; then
       rm -rf "$dst_root/hermes-cat-paw-context"
+    fi
+    if [ -d "$dst_root/recon-pack" ]; then
+      rm -rf "$dst_root/recon-pack"
     fi
   fi
 }

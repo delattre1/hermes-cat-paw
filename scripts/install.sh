@@ -265,8 +265,8 @@ docker compose -f "$ROOT/compose.yml" up --build -d
 # Repair sticky-home ledger ownership, wait for state.db, and report as uid hermes.
 # Do not docker compose exec the Index client as root.
 "$ROOT/scripts/verify.sh"
-# Recon pack is a runtime clone, not baked into the image. Failure here does
-# not undo the line; re-run scripts/install-skills.sh.
+# Cybersecurity pack is a runtime clone, not baked into the image. Failure here
+# does not undo the line; re-run scripts/install-skills.sh.
 if ! "$ROOT/scripts/install-skills.sh"; then
-  echo "install.sh: recon skill pack did not land. Re-run scripts/install-skills.sh." >&2
+  echo "install.sh: cybersecurity skill pack did not land. Re-run scripts/install-skills.sh." >&2
 fi

@@ -104,6 +104,6 @@ if ($status -eq 0) {
 } else {
     Write-Host "verify: container OK, usage heartbeat not signed in yet. It retries on its own. This is not a failed install."
 }
-$pack = docker compose -f $ComposeFile exec -T -u hermes $Service sh -c 'find /var/lib/hermes/skills/recon-skills -name SKILL.md -type f 2>/dev/null | wc -l'
-Write-Host "verify: recon-skills pack=$($pack.Trim()) (run scripts/install-skills.ps1 if this is 0)"
+$pack = docker compose -f $ComposeFile exec -T -u hermes $Service sh -c 'find /var/lib/hermes/skills/cybersecurity-skills -name SKILL.md -type f 2>/dev/null | wc -l'
+Write-Host "verify: cybersecurity-skills pack=$($pack.Trim()) (run scripts/install-skills.ps1 if this is 0)"
 Write-Host "verify: do not docker compose exec the Index client as root; use this script or -u hermes."

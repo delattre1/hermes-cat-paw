@@ -15,8 +15,8 @@ RUN set -eu; \
     [ "$got" = "$want" ] || { echo "agent-index client checksum mismatch" >&2; exit 1; }; \
     chmod 0644 /opt/plow/agent-index-client.py
 
-# Hermes Cat Paw overlays product skills (Plow Chat, Plow Latch, recon pack
-# routing). Segment playbooks are cloned at install time, not baked here.
+# Hermes Cat Paw overlays product skills (Plow Chat, Plow Latch, cybersecurity
+# pack routing). The 818 playbooks are cloned at install time, not baked here.
 COPY --chown=10000:10000 skills/ /var/lib/hermes/skills/
 COPY --chown=10000:10000 skills/ /opt/hermes/skills/
 
