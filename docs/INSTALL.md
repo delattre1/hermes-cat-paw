@@ -87,6 +87,7 @@ Do not:
 - stop after "image ready" and hand SMS to another terminal
 - tell the owner to run install.sh because you cannot do phone login
 - print, request, or commit plow-credentials or PLOW_AGENT_TOKEN
+- say "the line is ready" without the dashboard name and the phone number
 
 Relay SMS like this:
 
@@ -96,8 +97,11 @@ Relay SMS like this:
 Windows: .ps1 scripts. Linux/Omarchy: .sh scripts.
 Success is scripts/verify.sh (Windows: verify.ps1) exiting 0, then
 scripts/install-skills.sh loading the cybersecurity pack (authorized
-testing only). Tell the owner the agent is installed, the line is ready,
-and the pack is in Hermes.
+testing only). The installer prints `announce-line: dashboard name` and
+`announce-line: text this number`. In the same turn, tell the owner:
+the agent is installed, the pack is in Hermes, the dashboard name, and
+the phone number they must text. Never say "the line is ready" without
+both. Never make them guess. Never print tokens or plow-credentials.
 
 Keep the volume hermes-cat-paw-home. Do not docker compose down -v on a
 normal update. They can add Latch later with the Latch-only prompt.
@@ -236,8 +240,11 @@ is a directory, rmdir it if empty and run install.sh again.
 Do not print, request, or commit plow-credentials or PLOW_AGENT_TOKEN.
 Relay SMS verbatim. Success is scripts/verify.sh (Windows: verify.ps1)
 exiting 0, then scripts/install-skills.sh (Windows: install-skills.ps1)
-loading the cybersecurity pack. Tell the owner the agent is installed, the
-line is ready, Latch is open, and the pack is in Hermes.
+loading the cybersecurity pack. The installer prints `announce-line:
+dashboard name` and `announce-line: text this number`. In the same turn,
+tell the owner: the agent is installed, Latch is open, the pack is in
+Hermes, the dashboard name, and the phone number they must text. Never
+say "the line is ready" without both. Never make them guess.
 
 Keep the volume hermes-cat-paw-home. Do not docker compose down -v on a
 normal update.
@@ -283,8 +290,11 @@ Then load the cybersecurity pack:
 Authorized testing only. Live probes go through Latch if it is connected.
 
 Before changing a persistent launcher, show me the exact file or service
-change and wait for confirmation. After the change, tell me the line is
-ready. Report what changed and what is still open.
+change and wait for confirmation. After the change, tell me the dashboard
+name and the phone number this line uses (from `plow-agents lines` matched
+to this credential, or from the plugin). Never say the line is ready
+without both. Never make me guess. Report what changed and what is still
+open.
 ```
 
 `AGENT_ID` is the product name. It is not the Latch app.
@@ -319,7 +329,12 @@ that file if the service already gets it from a credential manager.
 
 ## After install
 
-Text the Plow line and confirm you get a reply.
+Text the number the installer printed (`announce-line: text this number`).
+The dashboard name (Willow, Aspen, …) is the same line in the Plow app.
+If you are the installing agent: relay **name and number in the same
+turn**. "The line is ready" without those two is a failed handoff.
+
+Confirm they get a reply.
 
 The installer loads the cybersecurity pack. To load it again later:
 

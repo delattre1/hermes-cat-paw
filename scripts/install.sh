@@ -270,3 +270,10 @@ docker compose -f "$ROOT/compose.yml" up --build -d
 if ! "$ROOT/scripts/install-skills.sh"; then
   echo "install.sh: cybersecurity skill pack did not land. Re-run scripts/install-skills.sh." >&2
 fi
+# Last lines of the log: installing agents relay name + number. Do not skip.
+echo "==== tell the owner (do not skip) ===="
+if ! "$ROOT/scripts/announce-line.sh"; then
+  echo "install.sh: could not name the line. Do not make the owner guess." >&2
+fi
+echo "The agent is installed. The cybersecurity pack is in Hermes."
+echo "They text the number above from their phone."
