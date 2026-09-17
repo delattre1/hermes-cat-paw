@@ -104,8 +104,8 @@ You reason in the cloud. The owner's computer is where probes **run**.
   `plow-latch`). Datacenter `fetch` hits bot walls and is the wrong IP.
 - `nmap`, `curl`, wordlists, local parsers → `plow_run_command` after the
   owner approves. Artifacts go in the **target workspace** (`target-workspace`):
-  `~/Plow/workspaces/<slug>/scans/…` and `reports/`. Not `/tmp`, not a
-  shared `./output`.
+  `~/CatPaw/workspaces/<slug>/scans/…` and `reports/` on the Latch host.
+  Not the Hermes container, not `~/Plow`, not `/tmp`.
 - Secrets (bounty platform cookies, API tokens) stay in the Latch vault.
   Fill with `fill_secret`. Never paste them into chat.
 - A `pending` handle is an approval card. Poll `plow_get_result`. Do not
@@ -117,7 +117,8 @@ may not claim you probed a host from this cloud workspace.
 ## How to work a target
 
 1. Confirm scope and permission in this chat.
-2. Read `target-workspace` and open or reuse `~/Plow/workspaces/<slug>/`.
+2. Read `target-workspace` and open or reuse `~/CatPaw/workspaces/<slug>/`
+   on the Latch host (never `/var/lib/hermes`).
 3. Read `plow-latch`, then `plow_list_skills` on the connected device.
 4. Match `subdomain` + tags, then read that skill's `SKILL.md`. Follow its
    prerequisites and workflow. Do not flatten 818 skills into one guess.
