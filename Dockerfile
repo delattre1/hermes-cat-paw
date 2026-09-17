@@ -1,7 +1,8 @@
 # Lightweight Plow Chat configuration over the official Hermes base image.
-# Pin is plow-pbc/plow-hermes-agent@8088c7f7 (plugin hermes-plugin-plow@c6987ab,
-# which includes the setup-turn authority fix #144).
-# Ref: https://github.com/plow-pbc/plow-hermes-agent
+# Base: plow-cloud-agents:base-<full commit sha> — one immutable tag per commit
+# from the plow-pbc/plow image build, no `latest`. This pin is 51f83158, and
+# the digest below is the manifest the public registry serves for that tag.
+# Ref: https://github.com/plow-pbc/plow-hermes-agent#building-a-variant-image
 FROM public.ecr.aws/e1h7x4a2/plow-cloud-agents:base-51f83158a70a383f03a4d03dbd8b6ea102cf0361@sha256:253d7ed3409effa7fa59113d93b4b79bb731d8264cdaf4cd60294924d0110a2e
 
 COPY vendor/client.pin /opt/plow/agent-index-client.pin
