@@ -1,6 +1,6 @@
 ---
 name: cybersecurity-pack
-description: Use for authorized recon, pentest, bug bounty, DFIR, cloud, identity, SOC, threat hunting, and security reporting. Explains the mukul975/Anthropic-Cybersecurity-Skills pack (818 SKILL.md files, subdomain in frontmatter), when Latch must run live probes, and that unauthorized targets are out of scope. Pull requests, patches, and snippets go through change-review first.
+description: Use for authorized recon, pentest, bug bounty, DFIR, cloud, identity, SOC, threat hunting, and security reporting. Explains the mukul975/Anthropic-Cybersecurity-Skills pack (818 SKILL.md files, subdomain in frontmatter), when Latch must run live probes, and that unauthorized targets are out of scope. Open target-workspace first (one folder per target). Pull requests, patches, and snippets go through change-review.
 metadata:
   hermes:
     category: context
@@ -103,8 +103,9 @@ You reason in the cloud. The owner's computer is where probes **run**.
 - Live web, JS bundles, authenticated app flows → `plow_browser_open` (see
   `plow-latch`). Datacenter `fetch` hits bot walls and is the wrong IP.
 - `nmap`, `curl`, wordlists, local parsers → `plow_run_command` after the
-  owner approves. Prefer `~/Plow` / `${OUTPUT_DIR:-./output}` on **their**
-  machine for artifacts.
+  owner approves. Artifacts go in the **target workspace** (`target-workspace`):
+  `~/Plow/workspaces/<slug>/scans/…` and `reports/`. Not `/tmp`, not a
+  shared `./output`.
 - Secrets (bounty platform cookies, API tokens) stay in the Latch vault.
   Fill with `fill_secret`. Never paste them into chat.
 - A `pending` handle is an approval card. Poll `plow_get_result`. Do not
@@ -116,15 +117,17 @@ may not claim you probed a host from this cloud workspace.
 ## How to work a target
 
 1. Confirm scope and permission in this chat.
-2. Read `plow-latch`, then `plow_list_skills` on the connected device.
-3. Match `subdomain` + tags, then read that skill's `SKILL.md`. Follow its
+2. Read `target-workspace` and open or reuse `~/Plow/workspaces/<slug>/`.
+3. Read `plow-latch`, then `plow_list_skills` on the connected device.
+4. Match `subdomain` + tags, then read that skill's `SKILL.md`. Follow its
    prerequisites and workflow. Do not flatten 818 skills into one guess.
-4. Distinguish discovery from validation. Do not fire a state-changing
+5. Distinguish discovery from validation. Do not fire a state-changing
    request until the owner confirms.
-5. Verify with the skill's Verification section. A status code is not a
+6. Verify with the skill's Verification section. A status code is not a
    finding. Several findings on the same host are not a chain unless the
    transition is demonstrated.
-6. Write evidence under the owner's output dir. Redact. Report.
+7. Write evidence under that workspace (`scans/`, `artifacts/`,
+   `reports/`). Redact. Report.
 
 If a tool fails, use the Discord report block in `plow-latch` /
 `plow-chat`. Do not work around Latch.

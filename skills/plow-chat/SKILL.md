@@ -48,7 +48,7 @@ Two platforms share one line-scoped token:
 
 Keep replies short. Bold and italics render; skip code blocks and tables.
 A pull request or snippet to review is `change-review` (verdict on this
-line; evidence on disk via Latch).
+line; evidence in the target workspace via Latch). Name the slug.
 
 To send a photo or file in **this** chat, put `MEDIA:/absolute/path/to/file`
 on its own line in the reply. Do not use `plow_send_sequence` for files you

@@ -1,6 +1,6 @@
 ---
 name: change-review
-description: Use when the owner texts a pull request, PR URL, git diff, patch, gist, code snippet, branch, CI failure, or asks to test/review a change before merge. Orchestrates Latch checkout plus cybersecurity-pack hunts (secrets, SAST, supply chain, web/API, AI/MCP). Untrusted fork code is not executed unless they say yes.
+description: Use when the owner texts a pull request, PR URL, git diff, patch, gist, code snippet, branch, CI failure, or asks to test/review a change before merge. Opens target-workspace first. Orchestrates Latch checkout plus cybersecurity-pack hunts (secrets, SAST, supply chain, web/API, AI/MCP). Untrusted fork code is not executed unless they say yes.
 metadata:
   hermes:
     category: context
@@ -16,8 +16,9 @@ cybersecurity pack supplies the hunt playbooks. You do not invent a
 pentest, and you do not merge.
 
 Read `plow-chat` (how to talk), `plow-latch` (how to touch the machine),
-and `cybersecurity-pack` (how to pick a hunt) in the same engagement.
-If the pack tree is missing, tell them to run `scripts/install-skills.sh`.
+`target-workspace` (one folder per target), and `cybersecurity-pack`
+(how to pick a hunt) in the same engagement. If the pack tree is missing,
+tell them to run `scripts/install-skills.sh`.
 
 ## When to use
 
@@ -51,7 +52,7 @@ Decide this **before** any `plow_run_command` that could execute the tree.
 | --- | --- | --- |
 | **Owned** | They said they own the repo, or it is a branch on a remote they already use on this machine | Clone, `git diff`, secrets scan, SAST, **their** test command after they confirm the argv |
 | **Fork / incoming PR** | `gh pr view` shows `isFork` / a different `headRepository` | Read-only: diff, secrets, workflow audit, SAST on the patch. **No** `npm install`, `bundle`, `pip install`, `go test`, Docker build, or running the PR's own CI scripts unless they explicitly say yes **after** you stated that this executes untrusted code |
-| **Snippet / paste** | No repo, or a gist they did not write | Write it under `~/Plow/reviews/…`. Static review only until they say it is theirs and they want it executed |
+| **Snippet / paste** | No repo, or a gist they did not write | Write it under the target workspace `reviews/snippet-<utc>/`. Static review only until they say it is theirs and they want it executed |
 
 `npm install` on a hostile `package.json` is code execution. So is a
 malicious `Makefile`, `pre-commit` hook, or GitHub Action. Say that out
@@ -89,8 +90,9 @@ flowchart TD
   browser --> report
 ```
 
-You reason in the cloud. The checkout lives under `~/Plow/reviews/<slug>/`
-on the device (auto-approve reads/writes there unless deny-all). Do not
+You reason in the cloud. Read `target-workspace` and open (or reuse)
+`~/Plow/workspaces/<slug>/` on the device. Owned clones go in
+`checkout/owned/`. Fork PRs go in `checkout/untrusted/pr-<n>/`. Do not
 clone a private repo onto the Hermes cloud workspace. Do not `fetch` a
 GitHub HTML page from the datacenter and call it a review.
 
@@ -101,7 +103,8 @@ Work these in order. A later phase does not make an earlier label
 
 ### 0. Intake
 
-Confirm the five inputs. Short reply: what you will do, what Latch will
+Confirm the five inputs. Open or reuse the target workspace (read
+`target-workspace`). Short reply: slug, what you will do, what Latch will
 ask, what you will **not** run.
 
 ### 1. Device
@@ -121,11 +124,12 @@ Owned repo already on disk:
 
 Need a checkout:
 
-- Clone into `~/Plow/reviews/<slug>/` (not `~/` root, not `/tmp` you will
-  lose)
+- Clone into `checkout/owned/<repo>/` or `checkout/untrusted/pr-<n>/`
+  inside the workspace (not `~/` root, not `/tmp`, not a leftover
+  `~/Plow/reviews/`)
 - `gh pr checkout N` only after trust class is set
-- For a paste: `plow_write_file` the snippet. Do not keep the full secret
-  material in the next chat turn
+- For a paste: `plow_write_file` under `reviews/snippet-<utc>/input`. Do
+  not keep the full secret material in the next chat turn
 
 Record `HEAD`, remote URL, PR number, and whether it is a fork. That is
 evidence.
@@ -167,8 +171,9 @@ boring. Read the matching `SKILL.md` first. Follow its Verification
 section. A scanner exit code is not a finding.
 
 1. **Secrets** — `implementing-secret-scanning-with-gitleaks` on the
-   range `base...HEAD` (and `--no-git` for a snippet). Hits go to the
-   owner; rotate advice, not the secret value in chat.
+   range `base...HEAD` (and `--no-git` for a snippet). Write the report
+   under workspace `scans/secrets/`. Hits go to the owner; rotate
+   advice, not the secret value in chat.
 2. **CI injection** — `securing-github-actions-workflows` if any workflow
    file changed. Unpinned actions, `pull_request_target`, `${{ github.event.issue.title }}`
    in `run:`, write-all `GITHUB_TOKEN`.
@@ -195,7 +200,7 @@ chain unless A's output is B's input. Same rule as `cybersecurity-pack`.
 
 Ask which command the repo already uses (`just test`, `npm test`,
 `pytest`, `cargo test`, `scripts/verify.sh`). Show the argv on the Latch
-card. Capture logs under the review dir.
+card. Capture logs under the workspace `logs/` and `reviews/pr-<n>/`.
 
 Red CI: fetch the log with `gh run view --log` **on Latch**, then fix
 hypotheses. Do not paste tokens from the log into chat.
@@ -217,18 +222,20 @@ Phone (this chat — **no tables, no code fences**, plow-chat rendering):
 - What ran vs what you refused
 - Each finding in one line: severity, path, label (observed/inferred/…)
 - Merge advice: **block**, **ask**, or **no security objection from this review**
-- Where the disk report lives
+- Where the disk report lives (workspace `reports/REPORT.md`)
 
-Disk (`~/Plow/reviews/<slug>/REPORT.md`): full commands (no secrets),
-file list, pack skills followed, raw scanner outputs, labels. Latch
-audit is append-only — do not treat it as the report.
+Disk (`reports/REPORT.md` in the target workspace): full commands (no
+secrets), file list, pack skills followed, raw scanner outputs under
+`scans/`, labels. Latch audit is append-only — do not treat it as the
+report.
 
 If you cannot name the **change**, the **trust class**, the **step**, and
 the **stop**, you are not reviewing. You are hoping.
 
 ## Snippet path (no repo)
 
-1. Write the paste under `~/Plow/reviews/snippet-<utc>/input`.
+1. Write the paste under `reviews/snippet-<utc>/input` in the workspace
+   (`target-workspace` snippet slug if there is no repo).
 2. Infer language from content, not from the owner's joke.
 3. Run gates 4.1 and 4.4 as filesystem scans (`gitleaks --no-git`,
    Semgrep on that file).
