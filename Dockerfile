@@ -15,14 +15,20 @@ RUN set -eu; \
     [ "$got" = "$want" ] || { echo "agent-index client checksum mismatch" >&2; exit 1; }; \
     chmod 0644 /opt/plow/agent-index-client.py
 
-# Static review CLIs (gitleaks, semgrep, trivy, …). Live scanners (nmap,
-# subfinder, nuclei) are not baked — they run on Latch. The 818 playbooks
-# are still cloned at install time.
+# Review + recon CLIs (gitleaks, nmap, nuclei, …) from vendor/review-tools.pin.
+# The 818 playbooks are still cloned at install time. Live packets at an
+# owned host still prefer Latch when it is connected.
 COPY vendor/review-tools.pin /opt/cat-paw/review-tools.pin
-COPY image/install-review-tools.sh image/verify-review-tools.sh /opt/cat-paw/
-RUN chmod 0755 /opt/cat-paw/install-review-tools.sh /opt/cat-paw/verify-review-tools.sh \
- && /opt/cat-paw/install-review-tools.sh \
+COPY image/install-review-tools.sh /opt/cat-paw/install-review-tools.sh
+RUN chmod 0755 /opt/cat-paw/install-review-tools.sh \
+ && /opt/cat-paw/install-review-tools.sh
+COPY image/verify-review-tools.sh /opt/cat-paw/verify-review-tools.sh
+RUN chmod 0755 /opt/cat-paw/verify-review-tools.sh \
  && /opt/cat-paw/verify-review-tools.sh
+ENV PATH="/opt/cat-paw/bin:/usr/local/bin:${PATH}" \
+    TRIVY_CACHE_DIR=/opt/cat-paw/trivy-cache \
+    GRYPE_DB_CACHE_DIR=/opt/cat-paw/grype-db \
+    NUCLEI_TEMPLATES=/opt/cat-paw/nuclei-templates
 
 # Hermes Cat Paw overlays product skills (Plow Chat, Plow Latch, cybersecurity
 # pack routing, change-review, target-workspace, image-tools).

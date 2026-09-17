@@ -52,12 +52,14 @@ the wrong evidence.
 
 A pull request, patch, or snippet is `change-review` after
 `target-workspace`. Static gates (`gitleaks`, `semgrep`, `trivy`) run in
-the **agent image** (`image-tools`) on a paste or a public diff. Clone
-private trees under `~/CatPaw/workspaces/<slug>/checkout/…` on **this
-computer**. Never `/var/lib/hermes` and never `~/Plow`. Do not execute a
-fork PR's `npm install` / tests unless the owner accepted untrusted code
-on the card. GitHub tokens stay in the vault. Do not apt-get gitleaks on
-this laptop to review a patch.
+the **agent image** (`image-tools`) on a paste or a public diff. Live
+`nmap` / `nuclei` of an owned host still prefer this computer when Latch
+is connected. Clone private trees under
+`~/CatPaw/workspaces/<slug>/checkout/…` on **this computer**. Never
+`/var/lib/hermes` and never `~/Plow`. Do not execute a fork PR's
+`npm install` / tests unless the owner accepted untrusted code on the
+card. GitHub tokens stay in the vault. Do not apt-get gitleaks on this
+laptop to review a patch.
 
 ## MCP correctly
 

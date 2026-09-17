@@ -22,8 +22,8 @@ You can add the other piece later.
 - **Cybersecurity pack** is
   [mukul975/Anthropic-Cybersecurity-Skills](https://github.com/mukul975/Anthropic-Cybersecurity-Skills)
   (Apache-2.0), cloned into the Hermes home at install. Authorized testing
-  only. The Compose image already includes static review CLIs (gitleaks,
-  semgrep, trivy, …). Live probes (nmap, browser) still go through Latch.
+  only. The Compose image already includes review and recon CLIs (gitleaks,
+  nmap, nuclei, …). Live probes of an owned host still prefer Latch.
 
 If you are the installing agent: read `plow-chat` (and `plow-latch` when the
 path includes Latch). Do not dump installer internals at the owner.
@@ -100,10 +100,10 @@ Success is scripts/verify.sh (Windows: verify.ps1) exiting 0, then
 scripts/install-skills.sh loading the cybersecurity pack (authorized
 testing only). The installer prints `announce-line: dashboard name` and
 `announce-line: text this number`. In the same turn, tell the owner:
-the agent is installed, the pack is in Hermes, the dashboard name, and
-the phone number they must text. Static review CLIs are in the image
-(gitleaks, semgrep, trivy). Never say "the line is ready" without
-both. Never make them guess. Never print tokens or plow-credentials.
+  the agent is installed, the pack is in Hermes, the dashboard name, and
+  the phone number they must text. Review and recon CLIs are in the image
+  (gitleaks, nmap, nuclei, …). Never say "the line is ready" without
+  both. Never make them guess. Never print tokens or plow-credentials.
 
 Keep the volume hermes-cat-paw-home. Do not docker compose down -v on a
 normal update. They can add Latch later with the Latch-only prompt.
@@ -346,8 +346,8 @@ The installer loads the cybersecurity pack. To load it again later:
 ```
 
 These playbooks are for authorized testing only. Live probes (browser, nmap,
-curl) should go through Latch so you see the intent before it runs. Static
-review CLIs are already in the Compose image — do not apt-get gitleaks on
+curl) should go through Latch so you see the intent before it runs. The
+Compose image already has nmap/gitleaks/nuclei — do not apt-get them on
 the laptop just to review a patch.
 
 If Latch is installed:

@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
-# Bake pinned static-review CLIs into the image. Run as root at docker build.
-# Not for live recon (nmap, subfinder, nuclei): those stay on Latch.
+# Bake pinned review + recon CLIs into the image. Run as root at docker build.
 set -euo pipefail
 
 PIN="${REVIEW_TOOLS_PIN:-/opt/cat-paw/review-tools.pin}"
 DEST="${REVIEW_TOOLS_DEST:-/usr/local/bin}"
 UV_HOME="${REVIEW_TOOLS_UV_DIR:-/opt/cat-paw/uv-tools}"
+CATPAW_BIN="${REVIEW_TOOLS_CATPAW_BIN:-/opt/cat-paw/bin}"
+NUCLEI_TEMPLATES="${NUCLEI_TEMPLATES:-/opt/cat-paw/nuclei-templates}"
+TRIVY_CACHE_DIR="${TRIVY_CACHE_DIR:-/opt/cat-paw/trivy-cache}"
+GRYPE_DB_CACHE_DIR="${GRYPE_DB_CACHE_DIR:-/opt/cat-paw/grype-db}"
 
 if [[ ! -f "$PIN" ]]; then
   echo "install-review-tools: missing pin $PIN" >&2
@@ -32,6 +35,7 @@ reset_stanza() {
   AMD64_SHA256=""
   ARM64_URL=""
   ARM64_SHA256=""
+  FILE_PATH=""
 }
 
 url_for_slot() {
@@ -78,25 +82,50 @@ pick_payload() {
     printf '%s\n' "$f"
     return 0
   fi
-  echo "install-review-tools: no payload named $name in tarball" >&2
+  echo "install-review-tools: no payload named $name in archive" >&2
   find "$dir" -type f >&2
   return 1
 }
 
-install_tar() {
-  local archive="$TMP/$TOOL.tar.gz" extract="$TMP/extract-$TOOL" payload
+install_archive() {
+  local archive="$1" extract="$TMP/extract-$TOOL" payload
   rm -rf "$extract"
   mkdir -p "$extract"
-  download_verified "$(url_for_slot)" "$(sha_for_slot)" "$archive"
-  tar -xzf "$archive" -C "$extract"
+  case "$archive" in
+    *.zip) unzip -q -o "$archive" -d "$extract" ;;
+    *) tar -xzf "$archive" -C "$extract" ;;
+  esac
   payload="$(pick_payload "$extract" "$TOOL")"
   install -m 0755 "$payload" "$DEST/$TOOL"
+}
+
+install_tar() {
+  local archive="$TMP/$TOOL.tar.gz"
+  download_verified "$(url_for_slot)" "$(sha_for_slot)" "$archive"
+  install_archive "$archive"
+}
+
+install_zip() {
+  local archive="$TMP/$TOOL.zip"
+  download_verified "$(url_for_slot)" "$(sha_for_slot)" "$archive"
+  install_archive "$archive"
 }
 
 install_bin() {
   local raw="$TMP/$TOOL.bin"
   download_verified "$(url_for_slot)" "$(sha_for_slot)" "$raw"
   install -m 0755 "$raw" "$DEST/$TOOL"
+}
+
+install_file() {
+  local dest="${FILE_PATH:-}"
+  [[ -n "$dest" ]] || {
+    echo "install-review-tools: $TOOL kind=file needs path=" >&2
+    exit 1
+  }
+  mkdir -p "$(dirname "$dest")"
+  download_verified "$(url_for_slot)" "$(sha_for_slot)" "$TMP/$TOOL.file"
+  install -m 0644 "$TMP/$TOOL.file" "$dest"
 }
 
 install_uv() {
@@ -112,6 +141,44 @@ install_uv() {
   chmod -R a+rX "$UV_HOME"
 }
 
+install_npm() {
+  local spec="$TOOL"
+  [[ -n "$VERSION" ]] && spec="${TOOL}@${VERSION}"
+  command -v npm >/dev/null || {
+    echo "install-review-tools: npm missing; cannot install $TOOL" >&2
+    exit 1
+  }
+  echo "install-review-tools: npm install -g $spec"
+  npm install -g --allow-scripts="$TOOL" "$spec"
+}
+
+place_pd_httpx() {
+  if [[ -x "$DEST/httpx" ]]; then
+    mkdir -p "$CATPAW_BIN"
+    mv "$DEST/httpx" "$CATPAW_BIN/httpx"
+    ln -sfn "$CATPAW_BIN/httpx" "$DEST/pd-httpx"
+    echo "install-review-tools: ProjectDiscovery httpx -> $CATPAW_BIN/httpx (also pd-httpx)"
+  fi
+}
+
+prefetch_dbs() {
+  mkdir -p "$NUCLEI_TEMPLATES" "$TRIVY_CACHE_DIR" "$GRYPE_DB_CACHE_DIR"
+  export TRIVY_CACHE_DIR GRYPE_DB_CACHE_DIR
+  if command -v nuclei >/dev/null; then
+    echo "install-review-tools: nuclei templates -> $NUCLEI_TEMPLATES"
+    nuclei -update-templates -ud "$NUCLEI_TEMPLATES" -duc
+  fi
+  if command -v trivy >/dev/null; then
+    echo "install-review-tools: trivy vuln DB -> $TRIVY_CACHE_DIR"
+    trivy image --download-db-only --cache-dir "$TRIVY_CACHE_DIR"
+  fi
+  if command -v grype >/dev/null; then
+    echo "install-review-tools: grype DB -> $GRYPE_DB_CACHE_DIR"
+    GRYPE_DB_CACHE_DIR="$GRYPE_DB_CACHE_DIR" grype db update
+  fi
+  chmod -R a+rX /opt/cat-paw /usr/share/wordlists
+}
+
 APT_PACKAGES=()
 STANZAS=()
 
@@ -120,7 +187,7 @@ flush_collect() {
   if [[ "$KIND" == apt ]]; then
     APT_PACKAGES+=("$TOOL")
   else
-    STANZAS+=("${TOOL}|${VERSION}|${KIND}|${AMD64_URL}|${AMD64_SHA256}|${ARM64_URL}|${ARM64_SHA256}")
+    STANZAS+=("${TOOL}|${VERSION}|${KIND}|${AMD64_URL}|${AMD64_SHA256}|${ARM64_URL}|${ARM64_SHA256}|${FILE_PATH}")
   fi
 }
 
@@ -139,6 +206,7 @@ while IFS= read -r line || [[ -n "$line" ]]; do
     tool) TOOL="$val" ;;
     version) VERSION="$val" ;;
     kind) KIND="$val" ;;
+    path) FILE_PATH="$val" ;;
     amd64_url) AMD64_URL="$val" ;;
     amd64_sha256) AMD64_SHA256="$val" ;;
     arm64_url) ARM64_URL="$val" ;;
@@ -151,7 +219,8 @@ while IFS= read -r line || [[ -n "$line" ]]; do
 done <"$PIN"
 flush_collect
 
-mkdir -p "$DEST" "$UV_HOME"
+mkdir -p "$DEST" "$UV_HOME" "$CATPAW_BIN"
+export PATH="$CATPAW_BIN:$DEST:$PATH"
 
 if ((${#APT_PACKAGES[@]})); then
   echo "install-review-tools: apt ${APT_PACKAGES[*]}"
@@ -162,11 +231,14 @@ if ((${#APT_PACKAGES[@]})); then
 fi
 
 for CURRENT in "${STANZAS[@]}"; do
-  IFS='|' read -r TOOL VERSION KIND AMD64_URL AMD64_SHA256 ARM64_URL ARM64_SHA256 <<<"$CURRENT"
+  IFS='|' read -r TOOL VERSION KIND AMD64_URL AMD64_SHA256 ARM64_URL ARM64_SHA256 FILE_PATH <<<"$CURRENT"
   case "$KIND" in
     tar) install_tar ;;
+    zip) install_zip ;;
     bin) install_bin ;;
+    file) install_file ;;
     uv) install_uv ;;
+    npm) install_npm ;;
     *)
       echo "install-review-tools: unknown kind $KIND for $TOOL" >&2
       exit 1
@@ -174,5 +246,8 @@ for CURRENT in "${STANZAS[@]}"; do
   esac
 done
 
-rm -rf /root/.cache/uv /root/.cache/pip /tmp/uv-cache
+place_pd_httpx
+prefetch_dbs
+
+rm -rf /root/.cache/uv /root/.cache/pip /tmp/uv-cache /root/.npm
 echo "install-review-tools: done ($SLOT)"

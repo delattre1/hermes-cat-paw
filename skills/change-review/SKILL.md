@@ -156,7 +156,7 @@ Group paths. One group → at most a few pack skills. Do not open all 818.
 | --- | --- |
 | `.github/workflows/*`, `.gitlab-ci.yml` | `securing-github-actions-workflows`, `detecting-supply-chain-attacks-in-ci-cd`, `building-devsecops-pipeline-with-gitlab-ci` |
 | Secrets patterns, `.env*`, `id_rsa`, `*.pem` | `implementing-secret-scanning-with-gitleaks`, `implementing-secrets-scanning-in-ci-cd` |
-| `package-lock.json`, `pnpm-lock.yaml`, `requirements*.txt`, `go.sum`, `Cargo.lock` | `osv-scanner` in this image, then `detecting-typosquatting-packages-in-npm-pypi`, `detecting-dependency-confusion`, `detecting-malicious-npm-packages`. Snyk CLI is not baked (needs their account). |
+| `package-lock.json`, `pnpm-lock.yaml`, `requirements*.txt`, `go.sum`, `Cargo.lock` | `osv-scanner` and `snyk` in this image (`snyk auth` via Latch vault if they have an account), then `detecting-typosquatting-packages-in-npm-pypi`, `detecting-dependency-confusion`, `detecting-malicious-npm-packages`. |
 | `Dockerfile`, `compose*.yml`, `*.containerfile` | `scanning-docker-images-with-trivy`, `scanning-iac-and-images-with-trivy`, `performing-container-image-hardening` |
 | `*.tf`, Helm, k8s YAML | `scanning-iac-and-images-with-trivy`, `auditing-terraform-infrastructure-for-security`, `scanning-kubernetes-manifests-with-kubesec`, `securing-helm-chart-deployments` |
 | App source (web/UI) | `testing-for-xss-vulnerabilities`, `testing-for-open-redirect-vulnerabilities`, `testing-for-broken-access-control` |
@@ -311,7 +311,7 @@ You will not need most of the 818. The default set for a software PR:
 - `securing-github-actions-workflows`
 - `detecting-supply-chain-attacks-in-ci-cd`
 - `implementing-semgrep-for-custom-sast-rules`
-- `osv-scanner` (image) plus lockfile hunts; Snyk CLI is not baked
+- `osv-scanner` / `snyk` (image) plus lockfile hunts
 - `detecting-typosquatting-packages-in-npm-pypi`
 - `scanning-iac-and-images-with-trivy`
 - `testing-for-broken-access-control`

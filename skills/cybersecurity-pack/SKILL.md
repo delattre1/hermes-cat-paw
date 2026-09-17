@@ -103,10 +103,10 @@ You reason in the cloud. The owner's computer is where probes **run**.
 - Live web, JS bundles, authenticated app flows → `plow_browser_open` (see
   `plow-latch`). Datacenter `fetch` hits bot walls and is the wrong IP.
 - `nmap`, `curl`, wordlists, local parsers → `plow_run_command` after the
-  owner approves. Those live scanners are **not** in this image (read
-  `image-tools`). Artifacts go in the **target workspace** (`target-workspace`):
-  `~/CatPaw/workspaces/<slug>/scans/…` and `reports/` on the Latch host.
-  Not the Hermes container, not `~/Plow`, not `/tmp`.
+  owner approves when Latch is connected (correct IP). Those CLIs **are**
+  in this image (`image-tools`). Artifacts go in the **target workspace**
+  (`target-workspace`): `~/CatPaw/workspaces/<slug>/scans/…` and `reports/`
+  on the Latch host. Not `~/Plow`, not `/tmp`.
 - Static review of a paste or a public diff → image CLIs (`gitleaks`,
   `semgrep`, `trivy`, `osv-scanner`). Still copy the report into the
   workspace when Latch is connected.
@@ -126,8 +126,8 @@ may not claim you probed a host from this cloud workspace.
 3. Read `plow-latch`, then `plow_list_skills` on the connected device.
 4. Match `subdomain` + tags, then read that skill's `SKILL.md`. Follow its
    prerequisites and workflow. Do not flatten 818 skills into one guess.
-   Do not `apt-get` / `go install` a scanner this image already has, and
-   do not install `nmap` here to skip Latch.
+   Do not `apt-get` / `go install` a scanner this image already has. Live
+   packets at an owned host still prefer Latch when it is connected.
 5. Distinguish discovery from validation. Do not fire a state-changing
    request until the owner confirms.
 6. Verify with the skill's Verification section. A status code is not a

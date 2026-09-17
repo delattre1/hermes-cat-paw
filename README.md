@@ -113,8 +113,9 @@ affiliated with Anthropic PBC. Install pins a commit and copies `skills/`
 into your Hermes home. The playbooks are not baked into the image. The
 **static review CLIs** are: `gitleaks`, `semgrep`, `trivy`, `osv-scanner`,
 `kubesec`, `hadolint`, `gh`, `jq`, `yq`, `shellcheck` land at `docker
-build` (`vendor/review-tools.pin`). Live scanners (`nmap`, `subfinder`,
-`nuclei`) are not in the image — Latch holds those.
+build` (`vendor/review-tools.pin`), together with live CLIs (`nmap`,
+`subfinder`, `nuclei`, `ffuf`, ProjectDiscovery `httpx`). When Latch is
+connected, live packets at an owned host still go through Latch.
 
 Counted from the pinned checkout (`54a7988`), by `subdomain:` frontmatter:
 
@@ -167,15 +168,18 @@ Windows: `scripts/install-skills.ps1`. Authorized testing only; live probes go t
 
 </details>
 
-The image itself ships the **static** CLIs the PR workflow needs. Live recon stays on Latch.
+The image itself ships the review **and** recon CLIs. Live packets at a
+host you own still prefer Latch (your IP). Agent-only installs can run
+the same binaries from the container — the agent must say so.
 
-| Already in the Compose image | Still Latch (your IP, your disk) |
+| Already in the Compose image | Still Latch when connected |
 | --- | --- |
-| `gitleaks`, `semgrep`, `trivy`, `osv-scanner` | `nmap`, `subfinder`, nuclei, ffuf |
-| `kubesec`, `hadolint`, `gh`, `jq`, `yq`, `shellcheck` | Browser, vault, private clones |
-| Versions pinned in `vendor/review-tools.pin` | Evidence under `~/CatPaw/workspaces/<slug>/` |
+| `gitleaks`, `semgrep`, `trivy`, `osv-scanner`, `snyk`, `checkov` | Browser, vault, private clones |
+| `nmap`, `subfinder`, `nuclei`, `ffuf`, `httpx` (`pd-httpx`) | Approval card + your IP for an owned host |
+| `kubesec`, `hadolint`, `gh`, `jq`, `yq`, `shellcheck`, `cosign` | Evidence under `~/CatPaw/workspaces/<slug>/` |
+| Wordlists in `/usr/share/wordlists/`, nuclei templates, Trivy DB | Full SecLists / Burp / Ghidra (GUI) |
 
-Snyk CLI is not baked (it needs their account). Use `osv-scanner`. Do not `apt-get` gitleaks on the laptop just to review a paste.
+Do not `apt-get` gitleaks or nmap on the laptop just to review a paste.
 
 ---
 
