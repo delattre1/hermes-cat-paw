@@ -20,8 +20,8 @@ as_hermes() {
 # /var/lib/hermes is sticky (3770 root:hermes). A ledger written by
 # `docker compose exec` (root by default) cannot be replaced by uid hermes:
 # read fails with EACCES, os.replace fails with EPERM. Repair as root
-# before every report. Also refresh the product context skill into the
-# named volume, which otherwise keeps the copy from first boot.
+# before every report. Also refresh product skills into the named volume,
+# which otherwise keeps the copy from first boot.
 prepare_home() {
   for f in \
     "$HERMES_HOME/.agent-index-state.json" \
@@ -33,14 +33,23 @@ prepare_home() {
       chown hermes:hermes "$f" || true
     fi
   done
-  src=/opt/hermes/skills/hermes-cat-paw-context/SKILL.md
-  dst_dir="$HERMES_HOME/skills/hermes-cat-paw-context"
-  if [ -f "$src" ]; then
-    mkdir -p "$dst_dir"
-    cp -f "$src" "$dst_dir/SKILL.md"
-    chown hermes:hermes "$dst_dir" "$dst_dir/SKILL.md" || true
-    chmod 0755 "$dst_dir" || true
-    chmod 0644 "$dst_dir/SKILL.md" || true
+  src_root=/opt/hermes/skills
+  dst_root="$HERMES_HOME/skills"
+  if [ -d "$src_root" ]; then
+    mkdir -p "$dst_root"
+    for src in "$src_root"/*/SKILL.md; do
+      [ -f "$src" ] || continue
+      name=$(basename "$(dirname "$src")")
+      mkdir -p "$dst_root/$name"
+      cp -f "$src" "$dst_root/$name/SKILL.md"
+      chown hermes:hermes "$dst_root/$name" "$dst_root/$name/SKILL.md" || true
+      chmod 0755 "$dst_root/$name" || true
+      chmod 0644 "$dst_root/$name/SKILL.md" || true
+    done
+    # Retired overlay skill. The volume would otherwise keep first-boot copy.
+    if [ -d "$dst_root/hermes-cat-paw-context" ]; then
+      rm -rf "$dst_root/hermes-cat-paw-context"
+    fi
   fi
 }
 

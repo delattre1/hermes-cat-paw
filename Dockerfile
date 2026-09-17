@@ -15,8 +15,8 @@ RUN set -eu; \
     [ "$got" = "$want" ] || { echo "agent-index client checksum mismatch" >&2; exit 1; }; \
     chmod 0644 /opt/plow/agent-index-client.py
 
-# Hermes Cat Paw adds context only. Operational skills remain owned by the Hermes
-# installation that runs this image.
+# Hermes Cat Paw overlays product skills (Plow Chat, Plow Latch). Operational
+# skills remain owned by the Hermes installation that runs this image.
 COPY --chown=10000:10000 skills/ /var/lib/hermes/skills/
 COPY --chown=10000:10000 skills/ /opt/hermes/skills/
 
