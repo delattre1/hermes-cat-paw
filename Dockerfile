@@ -2,7 +2,7 @@
 # Pin is plow-pbc/plow-hermes-agent@8088c7f7 (plugin hermes-plugin-plow@c6987ab,
 # which includes the setup-turn authority fix #144).
 # Ref: https://github.com/plow-pbc/plow-hermes-agent
-FROM public.ecr.aws/e1h7x4a2/plow-cloud-agents:base-8088c7f77f5ffd536a80c9dc302ebdb39e6be1d2
+FROM public.ecr.aws/e1h7x4a2/plow-cloud-agents:base-51f83158a70a383f03a4d03dbd8b6ea102cf0361@sha256:253d7ed3409effa7fa59113d93b4b79bb731d8264cdaf4cd60294924d0110a2e
 
 COPY vendor/client.pin /opt/plow/agent-index-client.pin
 RUN set -eu; \
