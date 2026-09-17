@@ -1,6 +1,6 @@
 ---
 name: cybersecurity-pack
-description: Use for authorized recon, pentest, bug bounty, DFIR, cloud, identity, SOC, threat hunting, and security reporting. Explains the mukul975/Anthropic-Cybersecurity-Skills pack (818 SKILL.md files, subdomain in frontmatter), when Latch must run live probes, and that unauthorized targets are out of scope.
+description: Use for authorized recon, pentest, bug bounty, DFIR, cloud, identity, SOC, threat hunting, and security reporting. Explains the mukul975/Anthropic-Cybersecurity-Skills pack (818 SKILL.md files, subdomain in frontmatter), when Latch must run live probes, and that unauthorized targets are out of scope. Pull requests, patches, and snippets go through change-review first.
 metadata:
   hermes:
     category: context
@@ -89,6 +89,10 @@ reprints these counts from the pin.
 - `analyzing-cyber-kill-chain`
 - `testing-for-xss-vulnerabilities`
 - `performing-ssrf-vulnerability-exploitation`
+
+A pull request, git diff, or pasted snippet is **not** a pentest of the
+internet. Read `change-review` first: trust class, Latch checkout, then
+open only the pack skills that inventory table names.
 
 `SECURITY.md` / `SCOPE.md` / `AGENTS.md` in that tree win over improvisation.
 

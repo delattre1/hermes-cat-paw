@@ -76,6 +76,14 @@ Cat Paw: I'll load performing-subdomain-enumeration-with-subfinder,
          then stop before anything state-changing.
 
          Latch will ask before nmap / the browser session.
+
+You: Review PR 12 on kumanaya/hermes-cat-paw. Don't run the
+     fork until I say so.
+
+Cat Paw: I'll load change-review, checkout on Latch, then
+         gitleaks + the Actions workflow hunt.
+
+         Tests wait for your yes — a fork PR is untrusted code.
 ```
 
 A normal engagement looks like this:
@@ -130,6 +138,11 @@ Start from `conducting-external-reconnaissance-with-osint`,
 `performing-web-application-penetration-test`. Add a hunt skill only when
 discovery produces a signal. `scripts/install-skills.sh --list` reprints
 the full subdomain tally.
+
+A **pull request, patch, or snippet** is `change-review`: Latch checks
+it out, always-on gates (secrets, CI injection, lockfile, SAST) run on
+the diff, then only the pack hunts the inventory actually needs. Fork
+PRs stay read-only until you say the tests may execute untrusted code.
 
 <details>
 <summary><strong>Load or reload the pack</strong></summary>
