@@ -64,12 +64,13 @@ function Register-Page {
         $Service $Python $Client `
         --register --agent hermes-cat-paw `
         --name "Hermes Cat Paw" `
-        --blurb "Human-approved computer control for Windows, Linux, and Omarchy through Plow Latch." `
+        --blurb "Authorized recon from your phone. Latch approves every command and browser session on the computer you own." `
         --runtime "Hermes / Plow Latch" `
         --repo "https://github.com/kumanaya/hermes-cat-paw" `
         --install-url "https://github.com/kumanaya/hermes-cat-paw/blob/main/docs/INSTALL.md" `
         --video "KjWFtHh0EFE" `
         --image "https://raw.githubusercontent.com/kumanaya/hermes-cat-paw/main/hackathon-banner.png" `
+        --image "https://raw.githubusercontent.com/kumanaya/hermes-cat-paw/main/docs/images/cybersecurity.png" `
         --image "https://raw.githubusercontent.com/kumanaya/hermes-cat-paw/main/docs/images/real-usage.png"
 }
 
@@ -103,4 +104,6 @@ if ($status -eq 0) {
 } else {
     Write-Host "verify: container OK, usage heartbeat not signed in yet. It retries on its own. This is not a failed install."
 }
+$pack = docker compose -f $ComposeFile exec -T -u hermes $Service sh -c 'find /var/lib/hermes/skills/cybersecurity-skills -name SKILL.md -type f 2>/dev/null | wc -l'
+Write-Host "verify: cybersecurity-skills pack=$($pack.Trim()) (run scripts/install-skills.ps1 if this is 0)"
 Write-Host "verify: do not docker compose exec the Index client as root; use this script or -u hermes."

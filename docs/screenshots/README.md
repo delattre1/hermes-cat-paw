@@ -8,9 +8,11 @@ README and install art lives in [docs/images/](../images/):
 - `approve.png` — approval boundary
 - `install-guide.png` — install header
 - `real-usage.png` — Latch on a real desktop
+- `cybersecurity.png` — authorized recon chain (recon → report)
 
 `hackathon-banner.png` stays at the repository root. The Agent Index
-register script points at that raw GitHub URL.
+register script points at raw GitHub URLs on `kumanaya/hermes-cat-paw`,
+not another account.
 
 ## Demo screenshots
 

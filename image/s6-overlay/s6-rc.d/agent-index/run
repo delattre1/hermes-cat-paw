@@ -46,9 +46,12 @@ prepare_home() {
       chmod 0755 "$dst_root/$name" || true
       chmod 0644 "$dst_root/$name/SKILL.md" || true
     done
-    # Retired overlay skill. The volume would otherwise keep first-boot copy.
+    # Retired overlay skills. The volume would otherwise keep first-boot copy.
     if [ -d "$dst_root/hermes-cat-paw-context" ]; then
       rm -rf "$dst_root/hermes-cat-paw-context"
+    fi
+    if [ -d "$dst_root/recon-pack" ]; then
+      rm -rf "$dst_root/recon-pack"
     fi
   fi
 }
@@ -81,12 +84,13 @@ while :; do
     as_hermes env PLOW_AGENT_TOKEN="$PLOW_AGENT_TOKEN" \
       "$PYTHON" "$CLIENT" --register --agent "$AGENT_ID" \
       --name "Hermes Cat Paw" \
-      --blurb "Human-approved computer control for Windows, Linux, and Omarchy through Plow Latch." \
+      --blurb "Authorized recon from your phone. Latch approves every command and browser session on the computer you own." \
       --runtime "Hermes / Plow Latch" \
       --repo "https://github.com/kumanaya/hermes-cat-paw" \
       --install-url "https://github.com/kumanaya/hermes-cat-paw/blob/main/docs/INSTALL.md" \
       --video "KjWFtHh0EFE" \
       --image "https://raw.githubusercontent.com/kumanaya/hermes-cat-paw/main/hackathon-banner.png" \
+      --image "https://raw.githubusercontent.com/kumanaya/hermes-cat-paw/main/docs/images/cybersecurity.png" \
       --image "https://raw.githubusercontent.com/kumanaya/hermes-cat-paw/main/docs/images/real-usage.png" >/dev/null || {
         echo "agent-index: registration failed; not reporting this hour" >&2
         /bin/sleep 3600

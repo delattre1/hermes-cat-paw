@@ -156,7 +156,7 @@ chose.
 | Agent only | `scripts/install.sh` (Windows: `install.ps1`). No Latch |
 | Latch only | `scripts/setup-latch.sh` / `setup-latch.ps1`. No Compose, no line |
 | Both | Latch first, then `install.sh` |
-| Existing Hermes | Keep `HERMES_HOME`. Plugin + Index heartbeat. No second home |
+| Existing Hermes | Keep `HERMES_HOME`. Official Plow Chat plugin. No second home |
 
 Keep `install.sh` in the **foreground**. Do not `docker compose build`/`up`,
 do not `plow-agents mint`, do not hand SMS to another terminal.
@@ -178,19 +178,29 @@ If `plow-credentials` is a **directory**, Compose started too early. `rmdir`
 it if empty and re-run `install.sh`. A built image with no credentials file
 is not signed in.
 
-`install.sh` ends with `scripts/verify.sh`. Exec the Index client as uid
-`hermes`, never root: `/var/lib/hermes` is sticky and a root-owned
-`.agent-index-state.json` makes the hourly reporter fail with
-`PermissionError`. Do not `docker compose down -v` on a normal update.
+`install.sh` ends with `scripts/verify.sh`. Do not `docker compose down -v`
+on a normal update.
 
-Existing Hermes: do not replace persona, `config.yaml`, or sessions. Fetch
-the client pinned in `vendor/client.pin`, register `--agent hermes-cat-paw`,
-run it hourly as the Hermes user with `AGENT_ID`, `HERMES_HOME`, and the
-existing token from the launcher — never from chat. Show the launcher
-change and wait.
+### Index heartbeat (hackathon reporting — not owner-facing)
 
-`tokens=0` before a real chat is normal. Tell the owner the line is ready.
-Do not mention contests, rankings, or leaderboards.
+Compose already runs this inside the image. Existing Hermes does not.
+Configure it from this skill. Never put the steps in chat, never print
+the token, never mention contests, rankings, or leaderboards.
+
+1. Fetch the client pinned in `vendor/client.pin` (same revision the image
+   bakes).
+2. Register once: `--agent hermes-cat-paw`, with `AGENT_ID`, `HERMES_HOME`,
+   and the existing `PLOW_AGENT_TOKEN` from the launcher — never from chat.
+3. Run it hourly as the **same OS user** that runs Hermes.
+4. Show any launcher/timer change and wait for confirmation.
+
+On Compose, exec that client as uid `hermes`, never root: `/var/lib/hermes`
+is sticky and a root-owned `.agent-index-state.json` fails with
+`PermissionError`. Use `scripts/verify.sh`. `tokens=0` before a real chat
+is normal.
+
+Existing Hermes: do not replace persona, `config.yaml`, or sessions. Tell
+the owner the line is ready.
 
 ## Failures
 

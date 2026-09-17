@@ -70,12 +70,13 @@ register_page() {
     "$SERVICE" "$PYTHON" "$CLIENT" \
     --register --agent hermes-cat-paw \
     --name "Hermes Cat Paw" \
-    --blurb "Human-approved computer control for Windows, Linux, and Omarchy through Plow Latch." \
+    --blurb "Authorized recon from your phone. Latch approves every command and browser session on the computer you own." \
     --runtime "Hermes / Plow Latch" \
     --repo "https://github.com/kumanaya/hermes-cat-paw" \
     --install-url "https://github.com/kumanaya/hermes-cat-paw/blob/main/docs/INSTALL.md" \
     --video "KjWFtHh0EFE" \
     --image "https://raw.githubusercontent.com/kumanaya/hermes-cat-paw/main/hackathon-banner.png" \
+    --image "https://raw.githubusercontent.com/kumanaya/hermes-cat-paw/main/docs/images/cybersecurity.png" \
     --image "https://raw.githubusercontent.com/kumanaya/hermes-cat-paw/main/docs/images/real-usage.png"
 }
 
@@ -130,6 +131,12 @@ echo "verify: plow_chat=$chat_state"
 if [ "$chat_state" != "connected" ]; then
   echo "verify: Plow Chat is not connected yet. Text the line after it comes online." >&2
 fi
+
+pack="$("${COMPOSE[@]}" exec -T -u hermes "$SERVICE" sh -c \
+  'find /var/lib/hermes/skills/cybersecurity-skills -name SKILL.md -type f 2>/dev/null | wc -l' || true)"
+pack="${pack//$'\r'/}"
+pack="${pack#"${pack%%[![:space:]]*}"}"
+echo "verify: cybersecurity-skills pack=${pack:-0} (run scripts/install-skills.sh if this is 0)"
 
 if [ "$status" -eq 0 ]; then
   echo "verify: container OK, usage heartbeat signed in."
