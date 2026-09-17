@@ -82,6 +82,10 @@ Defense in this era is not more dashboards. It is seeing the chain on
 **your** assets before someone else walks it — with permission, with
 evidence, and with a stop you actually control.
 
+<p align="center">
+  <img src="docs/images/cybersecurity.png" alt="Authorized recon chain: recon, analyze, exploit, post-exploitation, report" width="760" />
+</p>
+
 ## Attack chains. Co-location is not a path.
 
 The pack's `chains/` skills exist so the agent cannot promote a pile of
