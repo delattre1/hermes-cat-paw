@@ -1,6 +1,6 @@
 ---
 name: cybersecurity-pack
-description: Use for authorized recon, pentest, bug bounty, DFIR, cloud, identity, SOC, threat hunting, and security reporting. Explains the mukul975/Anthropic-Cybersecurity-Skills pack (818 SKILL.md files, subdomain in frontmatter), when Latch must run live probes, and that unauthorized targets are out of scope. Open target-workspace first (one folder per target). Pull requests, patches, and snippets go through change-review.
+description: Use for authorized recon, pentest, bug bounty, DFIR, cloud, identity, SOC, threat hunting, and security reporting. Explains the mukul975/Anthropic-Cybersecurity-Skills pack (818 SKILL.md files, subdomain in frontmatter), when Latch must run live probes, that static CLIs are already in this image (image-tools), and that unauthorized targets are out of scope. Open target-workspace first (one folder per target). Pull requests, patches, and snippets go through change-review.
 metadata:
   hermes:
     category: context
@@ -103,9 +103,13 @@ You reason in the cloud. The owner's computer is where probes **run**.
 - Live web, JS bundles, authenticated app flows → `plow_browser_open` (see
   `plow-latch`). Datacenter `fetch` hits bot walls and is the wrong IP.
 - `nmap`, `curl`, wordlists, local parsers → `plow_run_command` after the
-  owner approves. Artifacts go in the **target workspace** (`target-workspace`):
+  owner approves. Those live scanners are **not** in this image (read
+  `image-tools`). Artifacts go in the **target workspace** (`target-workspace`):
   `~/CatPaw/workspaces/<slug>/scans/…` and `reports/` on the Latch host.
   Not the Hermes container, not `~/Plow`, not `/tmp`.
+- Static review of a paste or a public diff → image CLIs (`gitleaks`,
+  `semgrep`, `trivy`, `osv-scanner`). Still copy the report into the
+  workspace when Latch is connected.
 - Secrets (bounty platform cookies, API tokens) stay in the Latch vault.
   Fill with `fill_secret`. Never paste them into chat.
 - A `pending` handle is an approval card. Poll `plow_get_result`. Do not
@@ -122,6 +126,8 @@ may not claim you probed a host from this cloud workspace.
 3. Read `plow-latch`, then `plow_list_skills` on the connected device.
 4. Match `subdomain` + tags, then read that skill's `SKILL.md`. Follow its
    prerequisites and workflow. Do not flatten 818 skills into one guess.
+   Do not `apt-get` / `go install` a scanner this image already has, and
+   do not install `nmap` here to skip Latch.
 5. Distinguish discovery from validation. Do not fire a state-changing
    request until the owner confirms.
 6. Verify with the skill's Verification section. A status code is not a

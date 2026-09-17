@@ -110,7 +110,11 @@ The pack is [mukul975/Anthropic-Cybersecurity-Skills](https://github.com/mukul97
 (Apache-2.0): 818 `SKILL.md` files, 46 `subdomain` labels, mapped to ATT&CK,
 NIST CSF, ATLAS, D3FEND, AI RMF, and MITRE F3. Community project — not
 affiliated with Anthropic PBC. Install pins a commit and copies `skills/`
-into your Hermes home. The playbooks are not baked into the image.
+into your Hermes home. The playbooks are not baked into the image. The
+**static review CLIs** are: `gitleaks`, `semgrep`, `trivy`, `osv-scanner`,
+`kubesec`, `hadolint`, `gh`, `jq`, `yq`, `shellcheck` land at `docker
+build` (`vendor/review-tools.pin`). Live scanners (`nmap`, `subfinder`,
+`nuclei`) are not in the image — Latch holds those.
 
 Counted from the pinned checkout (`54a7988`), by `subdomain:` frontmatter:
 
@@ -142,13 +146,12 @@ Start from `conducting-external-reconnaissance-with-osint`,
 discovery produces a signal. `scripts/install-skills.sh --list` reprints
 the full subdomain tally.
 
-A **pull request, patch, or snippet** is `change-review`: Latch checks
-it out inside the **target workspace** (`~/CatPaw/workspaces/<slug>/`
-on your computer),
-always-on gates (secrets, CI injection, lockfile, SAST) run on the diff,
-then only the pack hunts the inventory actually needs. Fork PRs stay
-read-only until you say the tests may execute untrusted code. One host
-or repo → one folder; do not mix targets.
+A **pull request, patch, or snippet** is `change-review`: static gates
+(secrets, CI injection, lockfile, SAST) run with the CLIs **in this
+image**. Latch checks a private repo out inside the **target workspace**
+(`~/CatPaw/workspaces/<slug>/` on your computer) and stores the report.
+Fork PRs stay read-only until you say the tests may execute untrusted
+code. One host or repo → one folder; do not mix targets.
 
 <details>
 <summary><strong>Load or reload the pack</strong></summary>
@@ -163,6 +166,16 @@ cd hermes-cat-paw
 Windows: `scripts/install-skills.ps1`. Authorized testing only; live probes go through Latch.
 
 </details>
+
+The image itself ships the **static** CLIs the PR workflow needs. Live recon stays on Latch.
+
+| Already in the Compose image | Still Latch (your IP, your disk) |
+| --- | --- |
+| `gitleaks`, `semgrep`, `trivy`, `osv-scanner` | `nmap`, `subfinder`, nuclei, ffuf |
+| `kubesec`, `hadolint`, `gh`, `jq`, `yq`, `shellcheck` | Browser, vault, private clones |
+| Versions pinned in `vendor/review-tools.pin` | Evidence under `~/CatPaw/workspaces/<slug>/` |
+
+Snyk CLI is not baked (it needs their account). Use `osv-scanner`. Do not `apt-get` gitleaks on the laptop just to review a paste.
 
 ---
 

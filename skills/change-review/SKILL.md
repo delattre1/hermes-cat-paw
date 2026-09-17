@@ -1,6 +1,6 @@
 ---
 name: change-review
-description: Use when the owner texts a pull request, PR URL, git diff, patch, gist, code snippet, branch, CI failure, or asks to test/review a change before merge. Opens target-workspace first. Orchestrates Latch checkout plus cybersecurity-pack hunts (secrets, SAST, supply chain, web/API, AI/MCP). Untrusted fork code is not executed unless they say yes.
+description: Use when the owner texts a pull request, PR URL, git diff, patch, gist, code snippet, branch, CI failure, or asks to test/review a change before merge. Opens target-workspace first. Uses image-tools CLIs (gitleaks, semgrep, trivy, osv-scanner) for static gates. Latch fetches private trees. Untrusted fork code is not executed unless they say yes.
 metadata:
   hermes:
     category: context
@@ -10,15 +10,19 @@ metadata:
 # Change review
 
 This agent reviews **changes** the owner is allowed to test: a pull request,
-a branch, a patch, a gist, or a snippet pasted in chat. Hermes plans. Latch
-checks the code out and runs commands on **their** computer. The
-cybersecurity pack supplies the hunt playbooks. You do not invent a
-pentest, and you do not merge.
+a branch, a patch, a gist, or a snippet pasted in chat. Hermes plans.
+Static gates run in **this image** (`image-tools`). Latch checks private
+code out and persists evidence on **their** computer. The cybersecurity
+pack supplies the hunt playbooks. You do not invent a pentest, and you
+do not merge.
 
 Read `plow-chat` (how to talk), `plow-latch` (how to touch the machine),
-`target-workspace` (one folder per target), and `cybersecurity-pack`
-(how to pick a hunt) in the same engagement. If the pack tree is missing,
-tell them to run `scripts/install-skills.sh`.
+`target-workspace` (one folder per target), `image-tools` (CLIs in this
+image), and `cybersecurity-pack` (how to pick a hunt) in the same
+engagement. If the pack tree is missing,
+tell them to run `scripts/install-skills.sh`. Static CLIs (`gitleaks`,
+`semgrep`, `trivy`, `osv-scanner`, `gh`) are **already in this image** —
+read `image-tools`. Do not apt-get them. Live probes still need Latch.
 
 ## When to use
 
@@ -90,10 +94,11 @@ flowchart TD
   browser --> report
 ```
 
-You reason in the cloud. Read `target-workspace` and open (or reuse)
-`~/CatPaw/workspaces/<slug>/` on the **device** (Latch — not the Hermes
-container, not `~/Plow`). Owned clones go in
-`checkout/owned/`. Fork PRs go in `checkout/untrusted/pr-<n>/`. Do not
+You reason in the cloud. Static gates run **in this image** (`image-tools`)
+on a paste, a public `gh pr diff`, or a patch Latch already returned.
+Read `target-workspace` and open (or reuse) `~/CatPaw/workspaces/<slug>/`
+on the **device** when Latch is connected (not `~/Plow`). Owned clones go
+in `checkout/owned/`. Fork PRs go in `checkout/untrusted/pr-<n>/`. Do not
 clone a private repo onto the Hermes cloud workspace. Do not `fetch` a
 GitHub HTML page from the datacenter and call it a review.
 
@@ -111,8 +116,10 @@ ask, what you will **not** run.
 ### 1. Device
 
 Read `plow-latch`. `plow_list_skills` this turn. If Latch is disconnected,
-say so. You may still read the pack and review a **pasted** snippet
-statically. You may not claim you checked out a PR.
+say so. You may still read the pack, run image CLIs (`image-tools`) on a
+**pasted** snippet or a **public** PR diff, and report on the phone. You
+may not claim you checked out a private repo. Durable files still want
+the target workspace on the device.
 
 ### 2. Fetch (Latch)
 
@@ -149,7 +156,7 @@ Group paths. One group → at most a few pack skills. Do not open all 818.
 | --- | --- |
 | `.github/workflows/*`, `.gitlab-ci.yml` | `securing-github-actions-workflows`, `detecting-supply-chain-attacks-in-ci-cd`, `building-devsecops-pipeline-with-gitlab-ci` |
 | Secrets patterns, `.env*`, `id_rsa`, `*.pem` | `implementing-secret-scanning-with-gitleaks`, `implementing-secrets-scanning-in-ci-cd` |
-| `package-lock.json`, `pnpm-lock.yaml`, `requirements*.txt`, `go.sum`, `Cargo.lock` | `performing-sca-dependency-scanning-with-snyk`, `detecting-typosquatting-packages-in-npm-pypi`, `detecting-dependency-confusion`, `detecting-malicious-npm-packages` |
+| `package-lock.json`, `pnpm-lock.yaml`, `requirements*.txt`, `go.sum`, `Cargo.lock` | `osv-scanner` in this image, then `detecting-typosquatting-packages-in-npm-pypi`, `detecting-dependency-confusion`, `detecting-malicious-npm-packages`. Snyk CLI is not baked (needs their account). |
 | `Dockerfile`, `compose*.yml`, `*.containerfile` | `scanning-docker-images-with-trivy`, `scanning-iac-and-images-with-trivy`, `performing-container-image-hardening` |
 | `*.tf`, Helm, k8s YAML | `scanning-iac-and-images-with-trivy`, `auditing-terraform-infrastructure-for-security`, `scanning-kubernetes-manifests-with-kubesec`, `securing-helm-chart-deployments` |
 | App source (web/UI) | `testing-for-xss-vulnerabilities`, `testing-for-open-redirect-vulnerabilities`, `testing-for-broken-access-control` |
@@ -170,20 +177,20 @@ Every review runs these **on the checkout**, even when the inventory looks
 boring. Read the matching `SKILL.md` first. Follow its Verification
 section. A scanner exit code is not a finding.
 
-1. **Secrets** — `implementing-secret-scanning-with-gitleaks` on the
-   range `base...HEAD` (and `--no-git` for a snippet). Write the report
-   under workspace `scans/secrets/`. Hits go to the owner; rotate
-   advice, not the secret value in chat.
+1. **Secrets** — `implementing-secret-scanning-with-gitleaks` with the
+   image `gitleaks` on the range `base...HEAD` (and `--no-git` for a
+   snippet). Write the report under workspace `scans/secrets/` when Latch
+   is connected. Hits go to the owner; rotate advice, not the secret
+   value in chat.
 2. **CI injection** — `securing-github-actions-workflows` if any workflow
    file changed. Unpinned actions, `pull_request_target`, `${{ github.event.issue.title }}`
    in `run:`, write-all `GITHUB_TOKEN`.
 3. **Lockfile / new packages** — typosquat + confusion skills when the
    lockfile or a manifest changed.
 4. **SAST on the patch** — `implementing-semgrep-for-custom-sast-rules`
-   or `integrating-sast-into-github-actions-pipeline` as the method, run
-   **on the device** against the changed files. Owned trees only for
-   anything that executes project config (`.semgrep.yml` from a fork is
-   untrusted).
+   as the method, run with the image `semgrep` against the changed files.
+   Owned trees only for anything that executes project config
+   (`.semgrep.yml` from a fork is untrusted).
 
 Label each gate: **observed**, **inferred**, **confirmed**, **not tested**.
 
@@ -237,24 +244,37 @@ the **stop**, you are not reviewing. You are hoping.
 1. Write the paste under `reviews/snippet-<utc>/input` in the workspace
    (`target-workspace` snippet slug if there is no repo).
 2. Infer language from content, not from the owner's joke.
-3. Run gates 4.1 and 4.4 as filesystem scans (`gitleaks --no-git`,
-   Semgrep on that file).
+3. Run gates 4.1 and 4.4 in this image (`gitleaks detect --no-git`,
+   `semgrep`) on that file.
 4. Route like a one-file diff.
 5. Do not execute the snippet unless they said to, on Latch, with argv
    they will see.
+
+## Commands (image PATH)
+
+Read `image-tools`. These are already installed:
+
+- `gitleaks detect --no-git --source <dir>`
+- `semgrep --config p/ci --json <files>`
+- `trivy fs --scanners secret,misconfig --format json <dir>`
+- `osv-scanner scan --lockfile <lockfile>`
+- `hadolint Dockerfile` / `kubesec scan <manifest>`
+- `gh pr view N --json number,title,isDraft,headRepository,isCrossRepository`
+  (public). Private: Latch + vault, not `gh auth login` in this image.
 
 ## Commands (Latch)
 
 Least power: `plow_read_file` over `plow_run_command`. Declare
 `read_paths` / `write_paths`. `network: true` only for git, gh, package
-registries they confirmed.
+registries they confirmed. Use Latch to **fetch** private trees and to
+**persist** `scans/` / `reports/`. Do not install gitleaks on the laptop
+just to review a patch — that binary is in this image.
 
 Examples of argv you may propose (never invent flags the owner did not
 need):
 
 - `git diff --name-only origin/main...HEAD`
-- `gh pr view N --json number,title,isDraft,headRepository,isCrossRepository`
-- `gitleaks detect --source . --log-opts="<base>..HEAD"`
+- `gh pr diff N`
 - the repo's own test command, copied from README / `package.json`
 
 Do not:
@@ -291,7 +311,7 @@ You will not need most of the 818. The default set for a software PR:
 - `securing-github-actions-workflows`
 - `detecting-supply-chain-attacks-in-ci-cd`
 - `implementing-semgrep-for-custom-sast-rules`
-- `performing-sca-dependency-scanning-with-snyk`
+- `osv-scanner` (image) plus lockfile hunts; Snyk CLI is not baked
 - `detecting-typosquatting-packages-in-npm-pypi`
 - `scanning-iac-and-images-with-trivy`
 - `testing-for-broken-access-control`

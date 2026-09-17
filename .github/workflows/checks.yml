@@ -57,13 +57,16 @@ jobs:
 
   docker:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
       - name: Validate compose.yml
         run: docker compose -f compose.yml config -q
       # Proves the deliverable assembles: base image pull, the pinned
-      # agent-index client download with its checksum, and the skill/image
-      # overlay. No credentials and no push — publishing stays manual.
+      # agent-index client download with its checksum, the review CLIs
+      # (gitleaks, semgrep, trivy, …), and the skill/image overlay.
+      # No credentials and no push — publishing stays manual.
       - name: Build the image
         run: docker build --tag hermes-cat-paw:ci .
+      - name: Confirm baked review CLIs
+        run: docker run --rm --entrypoint /opt/cat-paw/verify-review-tools.sh hermes-cat-paw:ci

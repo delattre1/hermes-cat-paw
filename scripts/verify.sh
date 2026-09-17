@@ -138,6 +138,12 @@ pack="${pack//$'\r'/}"
 pack="${pack#"${pack%%[![:space:]]*}"}"
 echo "verify: cybersecurity-skills pack=${pack:-0} (run scripts/install-skills.sh if this is 0)"
 
+echo "verify: baked review CLIs"
+if ! "${COMPOSE[@]}" exec -T -u hermes "$SERVICE" /opt/cat-paw/verify-review-tools.sh; then
+  echo "verify: review CLIs missing. Rebuild the image (scripts/install.sh)." >&2
+  exit 1
+fi
+
 if [ "$status" -eq 0 ]; then
   echo "verify: container OK, usage heartbeat signed in."
   echo "verify: days=0 / tokens=0 is normal before a real Hermes chat."
