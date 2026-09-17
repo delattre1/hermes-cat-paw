@@ -145,3 +145,8 @@ else
   echo "verify: container OK, usage heartbeat not signed in yet. It retries on its own. This is not a failed install."
 fi
 echo "verify: do not docker compose exec the Index client as root; use this script or -u hermes."
+# Name the line so the installing agent can relay it. Failure here is not a
+# failed verify — the container may still be healthy.
+if ! "$ROOT/scripts/announce-line.sh"; then
+  echo "verify: could not name the line. Do not make the owner guess." >&2
+fi
