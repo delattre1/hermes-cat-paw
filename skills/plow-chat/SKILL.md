@@ -47,6 +47,9 @@ Two platforms share one line-scoped token:
 - `plow_email` — the agent's own mailbox
 
 Keep replies short. Bold and italics render; skip code blocks and tables.
+A pull request or snippet to review is `change-review` (verdict on this
+line; evidence on disk via Latch).
+
 To send a photo or file in **this** chat, put `MEDIA:/absolute/path/to/file`
 on its own line in the reply. Do not use `plow_send_sequence` for files you
 already have — that tool does not take paths.

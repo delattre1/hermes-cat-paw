@@ -50,6 +50,11 @@ Recon and other live probes belong here, not in the cloud. Read
 / `plow_run_command` on this host. A datacenter fetch is the wrong IP and
 the wrong evidence.
 
+A pull request, patch, or snippet is `change-review`. Clone and `git diff`
+on this computer (`~/Plow/reviews/…`). Do not execute a fork PR's
+`npm install` / tests unless the owner accepted untrusted code on the
+card. GitHub tokens stay in the vault.
+
 ## MCP correctly
 
 The server is `plow-latch`, MCP `2026-07-28`, POST-only through the Plow

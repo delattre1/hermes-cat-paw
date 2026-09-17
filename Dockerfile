@@ -16,7 +16,8 @@ RUN set -eu; \
     chmod 0644 /opt/plow/agent-index-client.py
 
 # Hermes Cat Paw overlays product skills (Plow Chat, Plow Latch, cybersecurity
-# pack routing). The 818 playbooks are cloned at install time, not baked here.
+# pack routing, change-review). The 818 playbooks are cloned at install time,
+# not baked here.
 COPY --chown=10000:10000 skills/ /var/lib/hermes/skills/
 COPY --chown=10000:10000 skills/ /opt/hermes/skills/
 
