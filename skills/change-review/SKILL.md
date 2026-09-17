@@ -91,7 +91,8 @@ flowchart TD
 ```
 
 You reason in the cloud. Read `target-workspace` and open (or reuse)
-`~/Plow/workspaces/<slug>/` on the device. Owned clones go in
+`~/CatPaw/workspaces/<slug>/` on the **device** (Latch — not the Hermes
+container, not `~/Plow`). Owned clones go in
 `checkout/owned/`. Fork PRs go in `checkout/untrusted/pr-<n>/`. Do not
 clone a private repo onto the Hermes cloud workspace. Do not `fetch` a
 GitHub HTML page from the datacenter and call it a review.
@@ -125,8 +126,7 @@ Owned repo already on disk:
 Need a checkout:
 
 - Clone into `checkout/owned/<repo>/` or `checkout/untrusted/pr-<n>/`
-  inside the workspace (not `~/` root, not `/tmp`, not a leftover
-  `~/Plow/reviews/`)
+  inside the workspace (not the container, not `~/Plow`, not `/tmp`)
 - `gh pr checkout N` only after trust class is set
 - For a paste: `plow_write_file` under `reviews/snippet-<utc>/input`. Do
   not keep the full secret material in the next chat turn

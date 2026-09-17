@@ -1,37 +1,65 @@
 ---
 name: target-workspace
-description: Use before recon, pentest, PR review, snippet testing, or any Latch write. Creates and uses one ~/Plow/workspaces/<slug> folder per authorized target, with a fixed layout for scope, checkout, scans, reviews, reports. Do not dump evidence in /tmp or mix two targets.
+description: Use before recon, pentest, PR review, snippet testing, or any Latch write. Creates one ~/CatPaw/workspaces/<slug> folder per authorized target on the owner's computer (Latch), never inside the Hermes container and never under ~/Plow. Fixed layout for scope, checkout, scans, reviews, reports.
 metadata:
   hermes:
     category: context
-    tags: [workspace, evidence, plow, latch, scope, authorized-testing]
+    tags: [workspace, evidence, latch, scope, authorized-testing]
 ---
 
 # Target workspace
 
-Every authorized target gets **one folder** on the owner's computer. Recon,
-PR review, snippets, and scanner output all land there. Hermes does not
-keep that tree in the cloud. Latch creates it under `~/Plow` so reads and
-writes auto-approve unless the device is deny-all.
+Hermes Cat Paw **reasons in a container**. That disk is the named volume
+`hermes-cat-paw-home` → `/var/lib/hermes` (sessions, skills, `state.db`).
+The owner does not browse it. `docker compose down -v` wipes it. It is
+the wrong IP and the wrong evidence.
+
+Engagement files live on **the computer Latch is running on** — the
+machine they can open in a file manager. Latch `plow_write_file` /
+`plow_run_command` with `write_paths` pointing at that tree. You never
+`mkdir` inside the container for a target.
+
+The tree is **`~/CatPaw/workspaces/<slug>/`**, not `~/Plow`. `~/Plow` is
+Latch's auto-approve inbox for small agent notes. Mixing recon, clones,
+and scanner output into Plow's folder hides evidence and auto-approves
+writes the owner should see on a card.
+
+Without Latch you may name the slug in chat. You may not claim the
+folder exists.
 
 Read this **before** `change-review` or a pack hunt that would write a
-file. If Latch is disconnected you may still name the slug in chat. You
-may not claim the folder exists.
+file.
 
 ## When to use
 
 - First message that names a host, repo, PR, gist, or snippet to work
 - "Where did we put the gitleaks output?"
 - Starting a second engagement on a target you already opened
-- Any time you were about to write `~/Plow/reviews/…`, `/tmp`, or `./output`
+- Any time you were about to write `~/Plow/…`, `/var/lib/hermes/…`,
+  `/tmp`, or `./output`
 
 **Do not use** to scan a target that has no permission in this thread.
 No permission → no folder → no probe.
 
+## Where it is (and is not)
+
+| Place | Role |
+| --- | --- |
+| Hermes container `/var/lib/hermes` | Agent brain only. Never a target tree. |
+| `~/Plow` on the device | Latch inbox. Not for engagements. |
+| This git checkout / Compose project | Installer. Not evidence. |
+| **`~/CatPaw/workspaces/<slug>/` via Latch** | The workspace. Host home, all OSes (`Path.home()/CatPaw/workspaces`). |
+
+Windows: `%USERPROFILE%\CatPaw\workspaces\`. Linux / Omarchy / macOS:
+`~/CatPaw/workspaces/`. Same layout.
+
+The Latch card must show `write_paths` under `~/CatPaw`. That is
+intentional — a new target is not silent.
+
 ## One target, one slug, one tree
 
 ```text
-~/Plow/workspaces/
+~/CatPaw/workspaces/
   INDEX.md                         # list of slugs (no secrets)
   <slug>/
     TARGET.md                      # identity, permission, stop
@@ -56,7 +84,8 @@ No permission → no folder → no probe.
 ```
 
 `OUTPUT_DIR` for pack skills is this tree (usually `scans/…` or
-`reports/`). Never `${OUTPUT_DIR:-./output}` on a random cwd.
+`reports/`). Never `${OUTPUT_DIR:-./output}` on a random cwd, and never
+a path inside the container.
 
 ## Slug
 
@@ -85,15 +114,17 @@ target, stop and ask. Do not reuse a folder for a different host.
 ## Create (Latch, first time)
 
 1. Confirm permission in chat (owned or written).
-2. Compute the slug. Say it on the phone.
-3. `plow_read_file` `~/Plow/workspaces/<slug>/TARGET.md`. If it exists,
+2. Compute the slug. Say it on the phone **and** the host path
+   (`CatPaw/workspaces/<slug>` on their computer).
+3. `plow_read_file` `~/CatPaw/workspaces/<slug>/TARGET.md`. If it exists,
    **reuse** — do not mkdir a second tree. Append the new engagement
    under `reviews/` or `intake/`.
-4. If missing, create the layout in **one** command (smallest argv).
-   `write_paths` includes `~/Plow/workspaces`. No `network`.
+4. If missing, create the layout in **one** command. `write_paths`
+   includes `~/CatPaw/workspaces`. No `network`. Do not set the cwd to
+   anything in the container.
 
 ```text
-python3 -c "import os, pathlib; root=pathlib.Path.home()/'Plow'/'workspaces'/'SLUG';
+python3 -c "import pathlib; root=pathlib.Path.home()/'CatPaw'/'workspaces'/'SLUG';
 subs=['scope','intake','checkout/owned','checkout/untrusted','diffs',
 'scans/secrets','scans/sast','scans/sca','scans/iac','scans/recon','scans/web',
 'artifacts','reviews','reports','logs','tmp'];
@@ -101,7 +132,7 @@ subs=['scope','intake','checkout/owned','checkout/untrusted','diffs',
 ```
 
 Replace `SLUG` with the real slug. Then `plow_write_file` `TARGET.md`
-and a one-line append to `~/Plow/workspaces/INDEX.md`.
+and a one-line append to `~/CatPaw/workspaces/INDEX.md`.
 
 `TARGET.md` (no secrets):
 
@@ -137,7 +168,9 @@ notes: PR review and later staging recon share this folder
 
 Do not:
 
-- Clone into `~/`, `~/Downloads`, `/tmp`, or the Hermes cloud home
+- Write into `/var/lib/hermes`, the Compose volume, or this repo
+- Write into `~/Plow` (wrong product folder; auto-approve)
+- Clone into `~/`, `~/Downloads`, or `/tmp`
 - Put scanner JSON in `checkout/`
 - Put a live `.env` or private key in `artifacts/` — vault + rotate
 - Mix `app.example.com` evidence into `acme-web` because they "feel related"
@@ -149,7 +182,8 @@ requires an explicit yes before `npm install` / tests there.
 
 ## INDEX.md
 
-Keep `~/Plow/workspaces/INDEX.md` as a table the owner can open:
+Keep `~/CatPaw/workspaces/INDEX.md` as a table the owner can open on
+**their** computer:
 
 ```text
 # Workspaces
@@ -168,7 +202,8 @@ Same target later (more recon, another PR):
 1. Read `TARGET.md`. If `permission` is still valid, continue.
 2. New PR → `reviews/pr-<n>/`, new clone only if `checkout/owned/` is
    missing or they asked to refresh.
-3. Update `reports/REPORT.md`; do not start a parallel `~/Plow/reviews/`.
+3. Update `reports/REPORT.md`; do not start a parallel tree under
+   `~/Plow` or in the container.
 
 If they renamed the product or moved the repo, ask whether this is the
 same target. Slug changes only when they say so; then copy, don't fork
@@ -176,8 +211,8 @@ silently.
 
 ## Phone vs disk
 
-Phone (no tables, no fences): slug, folder path in words, permission,
-what you created vs reused.
+Phone (no tables, no fences): slug, that it is on **this computer** under
+CatPaw/workspaces, permission, created vs reused.
 
 Disk holds the tree. Latch's audit log is not a substitute for
 `reports/REPORT.md`.
@@ -187,10 +222,10 @@ Disk holds the tree. Latch's audit log is not a substitute for
 | Situation | What you do |
 | --- | --- |
 | No permission in chat | No folder |
+| Latch disconnected | Stop. Do not mkdir in the container as a fallback |
 | Slug collision with a different target | Ask; do not write |
 | `TARGET.md` says a stop that this ask would break | Stop |
-| Latch disconnected | Do not pretend the workspace is on this cloud |
-| They ask to delete a workspace | Confirm the slug, then only that tree |
+| They ask to delete a workspace | Confirm the slug, then only that tree on the device |
 
 ## Failures
 
