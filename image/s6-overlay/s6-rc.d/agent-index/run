@@ -81,7 +81,7 @@ while :; do
     as_hermes env PLOW_AGENT_TOKEN="$PLOW_AGENT_TOKEN" \
       "$PYTHON" "$CLIENT" --register --agent "$AGENT_ID" \
       --name "Hermes Cat Paw" \
-      --blurb "Human-approved computer control for Windows, Linux, and Omarchy through Plow Latch." \
+      --blurb "Authorized recon from your phone. Latch approves every command and browser session on the computer you own." \
       --runtime "Hermes / Plow Latch" \
       --repo "https://github.com/kumanaya/hermes-cat-paw" \
       --install-url "https://github.com/kumanaya/hermes-cat-paw/blob/main/docs/INSTALL.md" \

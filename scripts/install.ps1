@@ -171,3 +171,9 @@ Write-Host "Starting Compose with AGENT_ID=$($env:AGENT_ID)"
 docker compose -f $Compose up --build -d
 # Repair sticky-home ledger ownership, wait for state.db, and report as uid hermes.
 & (Join-Path $PSScriptRoot "verify.ps1")
+# Recon pack is a runtime clone, not baked into the image.
+try {
+    & (Join-Path $PSScriptRoot "install-skills.ps1")
+} catch {
+    Write-Host "install.ps1: recon skill pack did not land. Re-run scripts/install-skills.ps1."
+}

@@ -1,0 +1,4 @@
+# Recon skill pack. Clone at install time; do not vendor the playbooks.
+# https://github.com/uphiago/recon-skills
+repo=https://github.com/uphiago/recon-skills.git
+sha=1260244136edc6ae698d76d3d526f503e322778d
