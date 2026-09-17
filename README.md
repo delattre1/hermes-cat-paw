@@ -111,10 +111,8 @@ The pack is [mukul975/Anthropic-Cybersecurity-Skills](https://github.com/mukul97
 NIST CSF, ATLAS, D3FEND, AI RMF, and MITRE F3. Community project — not
 affiliated with Anthropic PBC. Install pins a commit and copies `skills/`
 into your Hermes home. The playbooks are not baked into the image. The
-**static review CLIs** are: `gitleaks`, `semgrep`, `trivy`, `osv-scanner`,
-`kubesec`, `hadolint`, `gh`, `jq`, `yq`, `shellcheck` land at `docker
-build` (`vendor/review-tools.pin`). Live scanners (`nmap`, `subfinder`,
-`nuclei`) are not in the image — Latch holds those.
+image stays **slim**: `gitleaks`, `gh`, `jq`, `yq`, `shellcheck` only
+(`vendor/review-tools.pin`). Semgrep, Trivy, nmap, nuclei live on Latch.
 
 Counted from the pinned checkout (`54a7988`), by `subdomain:` frontmatter:
 
@@ -167,15 +165,14 @@ Windows: `scripts/install-skills.ps1`. Authorized testing only; live probes go t
 
 </details>
 
-The image itself ships the **static** CLIs the PR workflow needs. Live recon stays on Latch.
+The image stays slim. Secrets and PR metadata run here; heavy scanners stay on Latch.
 
-| Already in the Compose image | Still Latch (your IP, your disk) |
+| Already in the Compose image | Latch (your IP, your disk) |
 | --- | --- |
-| `gitleaks`, `semgrep`, `trivy`, `osv-scanner` | `nmap`, `subfinder`, nuclei, ffuf |
-| `kubesec`, `hadolint`, `gh`, `jq`, `yq`, `shellcheck` | Browser, vault, private clones |
+| `gitleaks`, `gh`, `jq`, `yq`, `shellcheck` | Semgrep, Trivy, nmap, nuclei, browser |
 | Versions pinned in `vendor/review-tools.pin` | Evidence under `~/CatPaw/workspaces/<slug>/` |
 
-Snyk CLI is not baked (it needs their account). Use `osv-scanner`. Do not `apt-get` gitleaks on the laptop just to review a paste.
+Do not `apt-get` extra scanners into the container — that is how the image got huge.
 
 ---
 

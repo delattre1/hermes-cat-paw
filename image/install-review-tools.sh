@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
-# Bake pinned static-review CLIs into the image. Run as root at docker build.
-# Not for live recon (nmap, subfinder, nuclei): those stay on Latch.
+# Bake a tiny set of review CLIs into the image. Run as root at docker build.
 set -euo pipefail
 
 PIN="${REVIEW_TOOLS_PIN:-/opt/cat-paw/review-tools.pin}"
 DEST="${REVIEW_TOOLS_DEST:-/usr/local/bin}"
-UV_HOME="${REVIEW_TOOLS_UV_DIR:-/opt/cat-paw/uv-tools}"
 
 if [[ ! -f "$PIN" ]]; then
   echo "install-review-tools: missing pin $PIN" >&2
@@ -57,7 +55,7 @@ download_verified() {
     exit 1
   }
   echo "install-review-tools: fetching $TOOL ($SLOT)"
-  curl -fsSL --retry 3 --retry-delay 2 --max-time 300 -o "$out" "$url"
+  curl -fsSL --retry 3 --retry-delay 2 --max-time 120 -o "$out" "$url"
   echo "${sha}  ${out}" | sha256sum -c -
 }
 
@@ -91,25 +89,6 @@ install_tar() {
   tar -xzf "$archive" -C "$extract"
   payload="$(pick_payload "$extract" "$TOOL")"
   install -m 0755 "$payload" "$DEST/$TOOL"
-}
-
-install_bin() {
-  local raw="$TMP/$TOOL.bin"
-  download_verified "$(url_for_slot)" "$(sha_for_slot)" "$raw"
-  install -m 0755 "$raw" "$DEST/$TOOL"
-}
-
-install_uv() {
-  local spec="$TOOL"
-  [[ -n "$VERSION" ]] && spec="${TOOL}==${VERSION}"
-  command -v uv >/dev/null || {
-    echo "install-review-tools: uv missing; cannot install $TOOL" >&2
-    exit 1
-  }
-  echo "install-review-tools: uv tool install $spec"
-  UV_TOOL_BIN_DIR="$DEST" UV_TOOL_DIR="$UV_HOME" \
-    uv tool install --force "$spec"
-  chmod -R a+rX "$UV_HOME"
 }
 
 APT_PACKAGES=()
@@ -151,7 +130,7 @@ while IFS= read -r line || [[ -n "$line" ]]; do
 done <"$PIN"
 flush_collect
 
-mkdir -p "$DEST" "$UV_HOME"
+mkdir -p "$DEST"
 
 if ((${#APT_PACKAGES[@]})); then
   echo "install-review-tools: apt ${APT_PACKAGES[*]}"
@@ -165,8 +144,6 @@ for CURRENT in "${STANZAS[@]}"; do
   IFS='|' read -r TOOL VERSION KIND AMD64_URL AMD64_SHA256 ARM64_URL ARM64_SHA256 <<<"$CURRENT"
   case "$KIND" in
     tar) install_tar ;;
-    bin) install_bin ;;
-    uv) install_uv ;;
     *)
       echo "install-review-tools: unknown kind $KIND for $TOOL" >&2
       exit 1
@@ -174,5 +151,4 @@ for CURRENT in "${STANZAS[@]}"; do
   esac
 done
 
-rm -rf /root/.cache/uv /root/.cache/pip /tmp/uv-cache
 echo "install-review-tools: done ($SLOT)"

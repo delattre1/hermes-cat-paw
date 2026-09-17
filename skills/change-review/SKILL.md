@@ -1,6 +1,6 @@
 ---
 name: change-review
-description: Use when the owner texts a pull request, PR URL, git diff, patch, gist, code snippet, branch, CI failure, or asks to test/review a change before merge. Opens target-workspace first. Uses image-tools CLIs (gitleaks, semgrep, trivy, osv-scanner) for static gates. Latch fetches private trees. Untrusted fork code is not executed unless they say yes.
+description: Use when the owner texts a pull request, PR URL, git diff, patch, gist, code snippet, branch, CI failure, or asks to test/review a change before merge. Opens target-workspace first. Uses image-tools CLIs (gitleaks, gh, jq, yq) for secrets and metadata. Heavy SAST/SCA and live probes go through Latch. Untrusted fork code is not executed unless they say yes.
 metadata:
   hermes:
     category: context
@@ -11,7 +11,8 @@ metadata:
 
 This agent reviews **changes** the owner is allowed to test: a pull request,
 a branch, a patch, a gist, or a snippet pasted in chat. Hermes plans.
-Static gates run in **this image** (`image-tools`). Latch checks private
+Secrets and PR metadata run in **this image** (`image-tools`). Heavy
+SAST/SCA and live probes go through Latch. Latch also checks private
 code out and persists evidence on **their** computer. The cybersecurity
 pack supplies the hunt playbooks. You do not invent a pentest, and you
 do not merge.
@@ -20,9 +21,10 @@ Read `plow-chat` (how to talk), `plow-latch` (how to touch the machine),
 `target-workspace` (one folder per target), `image-tools` (CLIs in this
 image), and `cybersecurity-pack` (how to pick a hunt) in the same
 engagement. If the pack tree is missing,
-tell them to run `scripts/install-skills.sh`. Static CLIs (`gitleaks`,
-`semgrep`, `trivy`, `osv-scanner`, `gh`) are **already in this image** —
-read `image-tools`. Do not apt-get them. Live probes still need Latch.
+tell them to run `scripts/install-skills.sh`. This image has `gitleaks`,
+`gh`, `jq`, `yq`, `shellcheck` — read `image-tools`. Semgrep / Trivy /
+nmap are **not** baked (the image stays slim). Use Latch or label the
+gate not tested. Do not apt-get them into the container.
 
 ## When to use
 
@@ -156,7 +158,7 @@ Group paths. One group → at most a few pack skills. Do not open all 818.
 | --- | --- |
 | `.github/workflows/*`, `.gitlab-ci.yml` | `securing-github-actions-workflows`, `detecting-supply-chain-attacks-in-ci-cd`, `building-devsecops-pipeline-with-gitlab-ci` |
 | Secrets patterns, `.env*`, `id_rsa`, `*.pem` | `implementing-secret-scanning-with-gitleaks`, `implementing-secrets-scanning-in-ci-cd` |
-| `package-lock.json`, `pnpm-lock.yaml`, `requirements*.txt`, `go.sum`, `Cargo.lock` | `osv-scanner` in this image, then `detecting-typosquatting-packages-in-npm-pypi`, `detecting-dependency-confusion`, `detecting-malicious-npm-packages`. Snyk CLI is not baked (needs their account). |
+| `package-lock.json`, `pnpm-lock.yaml`, `requirements*.txt`, `go.sum`, `Cargo.lock` | `detecting-typosquatting-packages-in-npm-pypi`, `detecting-dependency-confusion`. SCA scanners (osv-scanner, Trivy, Snyk) are not in this image — Latch or **not tested**. |
 | `Dockerfile`, `compose*.yml`, `*.containerfile` | `scanning-docker-images-with-trivy`, `scanning-iac-and-images-with-trivy`, `performing-container-image-hardening` |
 | `*.tf`, Helm, k8s YAML | `scanning-iac-and-images-with-trivy`, `auditing-terraform-infrastructure-for-security`, `scanning-kubernetes-manifests-with-kubesec`, `securing-helm-chart-deployments` |
 | App source (web/UI) | `testing-for-xss-vulnerabilities`, `testing-for-open-redirect-vulnerabilities`, `testing-for-broken-access-control` |
@@ -188,9 +190,9 @@ section. A scanner exit code is not a finding.
 3. **Lockfile / new packages** — typosquat + confusion skills when the
    lockfile or a manifest changed.
 4. **SAST on the patch** — `implementing-semgrep-for-custom-sast-rules`
-   as the method, run with the image `semgrep` against the changed files.
-   Owned trees only for anything that executes project config
-   (`.semgrep.yml` from a fork is untrusted).
+   as the method. Semgrep is **not** in this image. Run it on Latch if
+   the host has it; otherwise read the changed files and label **not
+   tested**. `.semgrep.yml` from a fork is untrusted.
 
 Label each gate: **observed**, **inferred**, **confirmed**, **not tested**.
 
@@ -244,8 +246,8 @@ the **stop**, you are not reviewing. You are hoping.
 1. Write the paste under `reviews/snippet-<utc>/input` in the workspace
    (`target-workspace` snippet slug if there is no repo).
 2. Infer language from content, not from the owner's joke.
-3. Run gates 4.1 and 4.4 in this image (`gitleaks detect --no-git`,
-   `semgrep`) on that file.
+3. Run gate 4.1 in this image (`gitleaks detect --no-git`). SAST (4.4)
+   only if Latch has Semgrep; else not tested.
 4. Route like a one-file diff.
 5. Do not execute the snippet unless they said to, on Latch, with argv
    they will see.
@@ -255,12 +257,12 @@ the **stop**, you are not reviewing. You are hoping.
 Read `image-tools`. These are already installed:
 
 - `gitleaks detect --no-git --source <dir>`
-- `semgrep --config p/ci --json <files>`
-- `trivy fs --scanners secret,misconfig --format json <dir>`
-- `osv-scanner scan --lockfile <lockfile>`
-- `hadolint Dockerfile` / `kubesec scan <manifest>`
 - `gh pr view N --json number,title,isDraft,headRepository,isCrossRepository`
-  (public). Private: Latch + vault, not `gh auth login` in this image.
+  (public). Private: Latch + vault, not `gh auth login` in this image
+- `yq` / `jq` / `shellcheck`
+
+Semgrep, Trivy, osv-scanner, hadolint, kubesec: Latch, or **not tested**.
+Do not apt-get them here.
 
 ## Commands (Latch)
 
@@ -310,10 +312,9 @@ You will not need most of the 818. The default set for a software PR:
 - `implementing-secret-scanning-with-gitleaks`
 - `securing-github-actions-workflows`
 - `detecting-supply-chain-attacks-in-ci-cd`
-- `implementing-semgrep-for-custom-sast-rules`
-- `osv-scanner` (image) plus lockfile hunts; Snyk CLI is not baked
-- `detecting-typosquatting-packages-in-npm-pypi`
-- `scanning-iac-and-images-with-trivy`
+- `implementing-semgrep-for-custom-sast-rules` (Latch if present)
+- lockfile hunts; SCA CLIs are not baked
+- `scanning-iac-and-images-with-trivy` (Latch if present)
 - `testing-for-broken-access-control`
 - `testing-api-for-broken-object-level-authorization`
 - `auditing-mcp-servers-for-tool-poisoning`

@@ -4,7 +4,7 @@ name: Checks
 # package here, so there is no TypeScript matrix (that lives in
 # cat-paw-latch). These jobs are exactly this repo's surface:
 #
-#   shell       bash -n plus shellcheck over scripts/*.sh
+#   shell       bash -n plus shellcheck over scripts/*.sh and image/*.sh
 #   powershell  parse every scripts/*.ps1 with the PowerShell parser
 #   docker      validate compose.yml, then build the image install.sh runs
 #
@@ -26,9 +26,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Parse with bash -n
         run: |
-          for f in scripts/*.sh; do bash -n "$f"; done
+          for f in scripts/*.sh image/*.sh; do bash -n "$f"; done
       - name: shellcheck
-        run: shellcheck scripts/*.sh
+        run: shellcheck scripts/*.sh image/*.sh
 
   powershell:
     runs-on: ubuntu-latest
@@ -57,14 +57,14 @@ jobs:
 
   docker:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - name: Validate compose.yml
         run: docker compose -f compose.yml config -q
       # Proves the deliverable assembles: base image pull, the pinned
       # agent-index client download with its checksum, the review CLIs
-      # (gitleaks, semgrep, trivy, …), and the skill/image overlay.
+      # (gitleaks, gh, jq, yq, shellcheck only), and the skill overlay.
       # No credentials and no push — publishing stays manual.
       - name: Build the image
         run: docker build --tag hermes-cat-paw:ci .
