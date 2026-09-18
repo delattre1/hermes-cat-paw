@@ -1,9 +1,9 @@
 <p align="center">
-  <a href="sms:+16282463032?&body=Set%20this%20up%20for%20me%3A%20aiworthusing.com%2Fagent-index%2Fhermes-cat-paw">
-    <img src="https://img.shields.io/badge/%F0%9F%9A%80%20TRY%20NOW%20IN%20ONE%20CLICK-Text%20%2B1%20628--246--3032-8bd5ca?style=for-the-badge&labelColor=0b7285" alt="Try now in one click — text +1 628-246-3032" />
+  <a href="https://aiworthusing.com/agent-index/hermes-cat-paw">
+    <img src="https://img.shields.io/badge/%F0%9F%9A%80%20TRY%20NOW%20IN%20ONE%20CLICK-Open%20the%20Agent%20Index-8bd5ca?style=for-the-badge&labelColor=0b7285" alt="Try Hermes Cat Paw — open the Agent Index" />
   </a>
 </p>
-<p align="center"><sub>One tap opens your texts. We set it up for you.</sub></p>
+<p align="center"><sub>One tap opens the Agent Index. On your phone, tap <strong>Text this agent</strong> and it sets itself up.</sub></p>
 
 <p align="center">
   <img src="docs/images/banner.png" alt="Hermes Cat Paw" width="720" />
