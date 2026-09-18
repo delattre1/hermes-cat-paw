@@ -138,6 +138,12 @@ pack="${pack//$'\r'/}"
 pack="${pack#"${pack%%[![:space:]]*}"}"
 echo "verify: cybersecurity-skills pack=${pack:-0} (run scripts/install-skills.sh if this is 0)"
 
+echo "verify: baked review CLIs"
+if ! "${COMPOSE[@]}" exec -T -u hermes "$SERVICE" /opt/cat-paw/verify-review-tools.sh; then
+  echo "verify: review CLIs missing. Rebuild the image (scripts/install.sh)." >&2
+  exit 1
+fi
+
 if [ "$status" -eq 0 ]; then
   echo "verify: container OK, usage heartbeat signed in."
   echo "verify: days=0 / tokens=0 is normal before a real Hermes chat."
@@ -145,3 +151,8 @@ else
   echo "verify: container OK, usage heartbeat not signed in yet. It retries on its own. This is not a failed install."
 fi
 echo "verify: do not docker compose exec the Index client as root; use this script or -u hermes."
+# Name the line so the installing agent can relay it. Failure here is not a
+# failed verify — the container may still be healthy.
+if ! "$ROOT/scripts/announce-line.sh"; then
+  echo "verify: could not name the line. Do not make the owner guess." >&2
+fi

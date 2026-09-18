@@ -50,6 +50,16 @@ Recon and other live probes belong here, not in the cloud. Read
 / `plow_run_command` on this host. A datacenter fetch is the wrong IP and
 the wrong evidence.
 
+A pull request, patch, or snippet is `change-review` after
+`target-workspace`. Secrets / metadata (`gitleaks`, `gh`, `jq`, `yq`) run
+in the **agent image** (`image-tools`) on a paste or a public diff. Heavy
+SAST/SCA and live probes run here if the host has the tool. Clone
+private trees under `~/CatPaw/workspaces/<slug>/checkout/…` on **this
+computer**. Never `/var/lib/hermes` and never `~/Plow`. Do not execute a
+fork PR's `npm install` / tests unless the owner accepted untrusted code
+on the card. GitHub tokens stay in the vault. Do not apt-get scanners
+into the Hermes container.
+
 ## MCP correctly
 
 The server is `plow-latch`, MCP `2026-07-28`, POST-only through the Plow
@@ -88,8 +98,11 @@ Least power:
    concealed field.
 4. Session handles are capabilities. Do not log or share them.
 
-Paths are canonicalized **before** the approval card (symlink-safe). Prefer
-`~/Plow` — reads/writes there auto-approve unless the device is deny-all.
+Paths are canonicalized **before** the approval card (symlink-safe).
+Engagement trees are `~/CatPaw/workspaces/<slug>/` (`target-workspace`)
+on this host — put that path on the card. `~/Plow` is Latch's inbox, not
+evidence. Do not write target files into the Hermes container. Do not
+mix two targets in one folder.
 
 File payload cap: 8 MiB per call.
 

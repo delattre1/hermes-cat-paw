@@ -1,6 +1,6 @@
 ---
 name: cybersecurity-pack
-description: Use for authorized recon, pentest, bug bounty, DFIR, cloud, identity, SOC, threat hunting, and security reporting. Explains the mukul975/Anthropic-Cybersecurity-Skills pack (818 SKILL.md files, subdomain in frontmatter), when Latch must run live probes, and that unauthorized targets are out of scope.
+description: Use for authorized recon, pentest, bug bounty, DFIR, cloud, identity, SOC, threat hunting, and security reporting. Explains the mukul975/Anthropic-Cybersecurity-Skills pack (818 SKILL.md files, subdomain in frontmatter), when Latch must run live probes, that this image is slim (image-tools: gitleaks, gh, jq, yq, shellcheck), and that unauthorized targets are out of scope. Open target-workspace first (one folder per target). Pull requests, patches, and snippets go through change-review.
 metadata:
   hermes:
     category: context
@@ -90,6 +90,10 @@ reprints these counts from the pin.
 - `testing-for-xss-vulnerabilities`
 - `performing-ssrf-vulnerability-exploitation`
 
+A pull request, git diff, or pasted snippet is **not** a pentest of the
+internet. Read `change-review` first: trust class, Latch checkout, then
+open only the pack skills that inventory table names.
+
 `SECURITY.md` / `SCOPE.md` / `AGENTS.md` in that tree win over improvisation.
 
 ## Latch is the probe surface
@@ -99,8 +103,14 @@ You reason in the cloud. The owner's computer is where probes **run**.
 - Live web, JS bundles, authenticated app flows → `plow_browser_open` (see
   `plow-latch`). Datacenter `fetch` hits bot walls and is the wrong IP.
 - `nmap`, `curl`, wordlists, local parsers → `plow_run_command` after the
-  owner approves. Prefer `~/Plow` / `${OUTPUT_DIR:-./output}` on **their**
-  machine for artifacts.
+  owner approves. Those live scanners are **not** in this image (read
+  `image-tools`). Artifacts go in the **target workspace** (`target-workspace`):
+  `~/CatPaw/workspaces/<slug>/scans/…` and `reports/` on the Latch host.
+  Not the Hermes container, not `~/Plow`, not `/tmp`.
+- Static review of a paste or a public diff → image CLIs (`gitleaks`,
+  `gh`, `jq`, `yq`, `shellcheck`). Semgrep / Trivy stay on Latch, or
+  label **not tested**. Still copy the report into the workspace when
+  Latch is connected.
 - Secrets (bounty platform cookies, API tokens) stay in the Latch vault.
   Fill with `fill_secret`. Never paste them into chat.
 - A `pending` handle is an approval card. Poll `plow_get_result`. Do not
@@ -112,15 +122,20 @@ may not claim you probed a host from this cloud workspace.
 ## How to work a target
 
 1. Confirm scope and permission in this chat.
-2. Read `plow-latch`, then `plow_list_skills` on the connected device.
-3. Match `subdomain` + tags, then read that skill's `SKILL.md`. Follow its
+2. Read `target-workspace` and open or reuse `~/CatPaw/workspaces/<slug>/`
+   on the Latch host (never `/var/lib/hermes`).
+3. Read `plow-latch`, then `plow_list_skills` on the connected device.
+4. Match `subdomain` + tags, then read that skill's `SKILL.md`. Follow its
    prerequisites and workflow. Do not flatten 818 skills into one guess.
-4. Distinguish discovery from validation. Do not fire a state-changing
+   Do not `apt-get` / `go install` a scanner this image already has, and
+   do not install `nmap` here to skip Latch.
+5. Distinguish discovery from validation. Do not fire a state-changing
    request until the owner confirms.
-5. Verify with the skill's Verification section. A status code is not a
+6. Verify with the skill's Verification section. A status code is not a
    finding. Several findings on the same host are not a chain unless the
    transition is demonstrated.
-6. Write evidence under the owner's output dir. Redact. Report.
+7. Write evidence under that workspace (`scans/`, `artifacts/`,
+   `reports/`). Redact. Report.
 
 If a tool fails, use the Discord report block in `plow-latch` /
 `plow-chat`. Do not work around Latch.

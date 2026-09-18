@@ -83,6 +83,15 @@ Cat Paw: I'll load performing-subdomain-enumeration-with-subfinder,
          then stop before anything state-changing.
 
          Latch will ask before nmap / the browser session.
+
+You: Review PR 12 on kumanaya/hermes-cat-paw. Don't run the
+     fork until I say so.
+
+Cat Paw: I'll open workspace acme-web if needed, load
+         change-review, checkout on Latch, then gitleaks
+         plus the Actions hunt.
+
+         Tests wait for your yes — a fork PR is untrusted code.
 ```
 
 A normal engagement looks like this:
@@ -90,7 +99,9 @@ A normal engagement looks like this:
 1. **Confirm scope** in chat (who owns it, what's in, what's out).
 2. **Pick a playbook** — discovery first, hunts only after a signal.
 3. **Approve live probes** on the desktop (`nmap`, browser, a cookie from a bounty platform).
-4. **Keep evidence** on disk you own (`~/Plow` / `$OUTPUT_DIR`).
+4. **Keep evidence** on disk you own — one folder per target
+   (`~/CatPaw/workspaces/<slug>/` on the Latch computer, not in the
+   Hermes container and not under `~/Plow`).
 5. **Report** what was *observed*, *inferred*, *confirmed*, or *not tested*.
 
 Without Latch you can still read the pack, plan, and draft. You must not claim you probed a host from the cloud.
@@ -106,7 +117,9 @@ The pack is [mukul975/Anthropic-Cybersecurity-Skills](https://github.com/mukul97
 (Apache-2.0): 818 `SKILL.md` files, 46 `subdomain` labels, mapped to ATT&CK,
 NIST CSF, ATLAS, D3FEND, AI RMF, and MITRE F3. Community project — not
 affiliated with Anthropic PBC. Install pins a commit and copies `skills/`
-into your Hermes home. The playbooks are not baked into the image.
+into your Hermes home. The playbooks are not baked into the image. The
+image stays **slim**: `gitleaks`, `gh`, `jq`, `yq`, `shellcheck` only
+(`vendor/review-tools.pin`). Semgrep, Trivy, nmap, nuclei live on Latch.
 
 Counted from the pinned checkout (`54a7988`), by `subdomain:` frontmatter:
 
@@ -138,6 +151,13 @@ Start from `conducting-external-reconnaissance-with-osint`,
 discovery produces a signal. `scripts/install-skills.sh --list` reprints
 the full subdomain tally.
 
+A **pull request, patch, or snippet** is `change-review`: static gates
+(secrets, CI injection, lockfile, SAST) run with the CLIs **in this
+image**. Latch checks a private repo out inside the **target workspace**
+(`~/CatPaw/workspaces/<slug>/` on your computer) and stores the report.
+Fork PRs stay read-only until you say the tests may execute untrusted
+code. One host or repo → one folder; do not mix targets.
+
 <details>
 <summary><strong>Load or reload the pack</strong></summary>
 
@@ -151,6 +171,15 @@ cd hermes-cat-paw
 Windows: `scripts/install-skills.ps1`. Authorized testing only; live probes go through Latch.
 
 </details>
+
+The image stays slim. Secrets and PR metadata run here; heavy scanners stay on Latch.
+
+| Already in the Compose image | Latch (your IP, your disk) |
+| --- | --- |
+| `gitleaks`, `gh`, `jq`, `yq`, `shellcheck` | Semgrep, Trivy, nmap, nuclei, browser |
+| Versions pinned in `vendor/review-tools.pin` | Evidence under `~/CatPaw/workspaces/<slug>/` |
+
+Do not `apt-get` extra scanners into the container — that is how the image got huge.
 
 ---
 
@@ -221,7 +250,7 @@ Recon is commands, a browser, and credentials. Those do not belong in a datacent
 | **Your network, not ours** | Bot walls and geo see your IP. Authenticated apps need `plow_browser_open`, not a cloud `fetch`. |
 | **Secrets stay in the vault** | `fill_secret` types. The model never reads the value back. |
 | **A stop is a stop** | Denial, timeout, MFA, disconnect, host-block. No bypass. |
-| **Evidence on disk you own** | `~/Plow` / `${OUTPUT_DIR}`. Latch's audit is append-only. |
+| **Evidence on disk you own** | `~/CatPaw/workspaces/<slug>/` via Latch. Not the container. Latch's audit is append-only. |
 
 <p align="center">
   <img src="docs/images/lines.png" alt="Plow Chat unlocks named agent lines in iMessage" width="760" />
@@ -249,7 +278,7 @@ If the agent cannot answer these, it must stop.
 | What leaves this machine? | Cloud fetch is the wrong IP, the wrong bot wall, the wrong evidence. | Live web and scanners run through Latch, after approval. |
 | Demonstrated vs inferred? | A `200`, a version string, or an open port is not impact. | Observed / inferred / confirmed / not tested — keep them apart. |
 | What is the stop? | Retrying around a timeout is an unscoped scanner. | Denial, timeout, MFA, disconnect, host-block: stop. |
-| Where is the evidence? | You cannot reproduce, redact, or defend a finding you didn't keep. | `~/Plow` / `OUTPUT_DIR` plus Latch's append-only audit. |
+| Where is the evidence? | You cannot reproduce, redact, or defend a finding you didn't keep. | `~/CatPaw/workspaces/<slug>/` on the Latch computer, plus the append-only audit. |
 
 </details>
 

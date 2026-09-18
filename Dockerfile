@@ -1,8 +1,9 @@
 # Lightweight Plow Chat configuration over the official Hermes base image.
-# Pin is plow-pbc/plow-hermes-agent@8088c7f7 (plugin hermes-plugin-plow@c6987ab,
-# which includes the setup-turn authority fix #144).
-# Ref: https://github.com/plow-pbc/plow-hermes-agent
-FROM public.ecr.aws/e1h7x4a2/plow-cloud-agents:base-8088c7f77f5ffd536a80c9dc302ebdb39e6be1d2
+# Base: plow-cloud-agents:base-<full commit sha> — one immutable tag per commit
+# from the plow-pbc/plow image build, no `latest`. This pin is 51f83158, and
+# the digest below is the manifest the public registry serves for that tag.
+# Ref: https://github.com/plow-pbc/plow-hermes-agent#building-a-variant-image
+FROM public.ecr.aws/e1h7x4a2/plow-cloud-agents:base-51f83158a70a383f03a4d03dbd8b6ea102cf0361@sha256:253d7ed3409effa7fa59113d93b4b79bb731d8264cdaf4cd60294924d0110a2e
 
 COPY vendor/client.pin /opt/plow/agent-index-client.pin
 RUN set -eu; \
@@ -15,8 +16,17 @@ RUN set -eu; \
     [ "$got" = "$want" ] || { echo "agent-index client checksum mismatch" >&2; exit 1; }; \
     chmod 0644 /opt/plow/agent-index-client.py
 
+# Tiny review CLIs (gitleaks, gh, jq, yq, shellcheck). No Semgrep/Trivy/
+# nmap — those bloat the image. Live probes stay on Latch. Playbooks clone
+# at install time.
+COPY vendor/review-tools.pin /opt/cat-paw/review-tools.pin
+COPY image/install-review-tools.sh image/verify-review-tools.sh /opt/cat-paw/
+RUN chmod 0755 /opt/cat-paw/install-review-tools.sh /opt/cat-paw/verify-review-tools.sh \
+ && /opt/cat-paw/install-review-tools.sh \
+ && /opt/cat-paw/verify-review-tools.sh
+
 # Hermes Cat Paw overlays product skills (Plow Chat, Plow Latch, cybersecurity
-# pack routing). The 818 playbooks are cloned at install time, not baked here.
+# pack routing, change-review, target-workspace, image-tools).
 COPY --chown=10000:10000 skills/ /var/lib/hermes/skills/
 COPY --chown=10000:10000 skills/ /opt/hermes/skills/
 

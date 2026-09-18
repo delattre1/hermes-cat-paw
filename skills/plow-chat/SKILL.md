@@ -47,6 +47,10 @@ Two platforms share one line-scoped token:
 - `plow_email` — the agent's own mailbox
 
 Keep replies short. Bold and italics render; skip code blocks and tables.
+A pull request or snippet to review is `change-review` (verdict on this
+line; static gates use image CLIs — `image-tools`; evidence in
+~/CatPaw/workspaces on the Latch computer). Name the slug.
+
 To send a photo or file in **this** chat, put `MEDIA:/absolute/path/to/file`
 on its own line in the reply. Do not use `plow_send_sequence` for files you
 already have — that tool does not take paths.
@@ -178,8 +182,28 @@ If `plow-credentials` is a **directory**, Compose started too early. `rmdir`
 it if empty and re-run `install.sh`. A built image with no credentials file
 is not signed in.
 
-`install.sh` ends with `scripts/verify.sh`. Do not `docker compose down -v`
-on a normal update.
+`install.sh` ends with `scripts/verify.sh`, the pack load, and
+`scripts/announce-line.sh`. Do not `docker compose down -v` on a normal
+update.
+
+### Tell the owner which line (required)
+
+After a successful install, the last lines of the log are:
+
+```text
+announce-line: dashboard name: Willow
+announce-line: text this number: +16505550100
+```
+
+Relay **both** in the same turn as "installed". They text that number
+from their phone. Never say "the line is ready" without the name and the
+number. Never make them guess. Never print `plow-credentials` or
+`PLOW_AGENT_TOKEN`.
+
+If those lines are missing, run `scripts/announce-line.sh` (Windows:
+`announce-line.ps1`) and relay its output. If that fails, run
+`python3 .tools/plow-agents/bin/plow-agents lines` and match `STATUS` to
+`# plow-agent-uid` in `plow-credentials` — still never print the token.
 
 ### Index heartbeat (hackathon reporting — not owner-facing)
 
@@ -200,7 +224,8 @@ is sticky and a root-owned `.agent-index-state.json` fails with
 is normal.
 
 Existing Hermes: do not replace persona, `config.yaml`, or sessions. Tell
-the owner the line is ready.
+the owner the dashboard name and the phone number this process is using.
+Never say the line is ready without both.
 
 ## Failures
 
