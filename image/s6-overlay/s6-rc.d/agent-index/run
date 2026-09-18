@@ -61,7 +61,7 @@ wait_for_store() {
   while [ ! -s "$HERMES_HOME/state.db" ]; do
     n=$((n + 1))
     if [ "$n" -gt 90 ]; then
-      echo "agent-index: Hermes state.db still missing; will retry next hour" >&2
+      echo "agent-index: Hermes state.db still missing; will retry in 5 minutes" >&2
       return 1
     fi
     if [ "$n" -eq 1 ] || [ $((n % 15)) -eq 0 ]; then
@@ -75,7 +75,7 @@ wait_for_store() {
 while :; do
   prepare_home
   if ! wait_for_store; then
-    /bin/sleep 3600
+    /bin/sleep 300
     continue
   fi
   as_hermes "$PYTHON" "$CLIENT" status >/dev/null
@@ -92,16 +92,16 @@ while :; do
       --image "https://raw.githubusercontent.com/kumanaya/hermes-cat-paw/main/hackathon-banner.png" \
       --image "https://raw.githubusercontent.com/kumanaya/hermes-cat-paw/main/docs/images/cybersecurity.png" \
       --image "https://raw.githubusercontent.com/kumanaya/hermes-cat-paw/main/docs/images/real-usage.png" >/dev/null || {
-        echo "agent-index: registration failed; not reporting this hour" >&2
-        /bin/sleep 3600
+        echo "agent-index: registration failed; not reporting this round" >&2
+        /bin/sleep 300
         continue
       }
   elif [ "$status" -ne 0 ]; then
-    echo "agent-index: status exited $status; not reporting this hour" >&2
-    /bin/sleep 3600
+    echo "agent-index: status exited $status; not reporting this round" >&2
+    /bin/sleep 300
     continue
   fi
   as_hermes "$PYTHON" "$CLIENT" \
     || echo "agent-index: reporter exited non-zero" >&2
-  /bin/sleep 3600
+  /bin/sleep 300
 done
